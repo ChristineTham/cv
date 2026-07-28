@@ -1,0 +1,30 @@
+---
+interface Props {
+  class?: string
+  fullWidth?: boolean
+}
+
+const { class: className, fullWidth = false } = Astro.props
+---
+
+{
+  fullWidth ? (
+    /* px-4 to match the gutter the standard branch gets from its inner wrapper. The
+       full-bleed rule is deliberate (the footer is its only caller), but without a base
+       gutter the footer text sat flush against the screen edge below 640px while every
+       other block kept 16px. */
+    <div class:list={['px-4 sm:px-8', className]}>
+      <div class='mx-auto max-w-full'>
+        <slot />
+      </div>
+    </div>
+  ) : (
+    <div class:list={['sm:px-8', className]}>
+      <div class='mx-auto max-w-7xl lg:px-8'>
+        <div class='px-4 relative lg:px-12 sm:px-8'>
+          <slot />
+        </div>
+      </div>
+    </div>
+  )
+}

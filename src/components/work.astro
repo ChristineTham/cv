@@ -1,0 +1,59 @@
+---
+import { getCollection } from 'astro:content'
+import EntityLogo from './entitylogo.astro'
+import { formatDateRange } from '../utils/timeline'
+
+let work = await getCollection('work')
+work = work.sort((a, b) => {
+  const endA = a.data.endyear ?? 9999
+  const endB = b.data.endyear ?? 9999
+  if (endB !== endA) return endB - endA
+  return b.data.startyear - a.data.startyear
+})
+---
+
+<div class='p-6 card rounded-2xl'>
+  <h2 class='text-lg text-accent font-semibold font-serif flex items-center'>
+    <span class='i-heroicons-briefcase text-secondary h-6 w-6' aria-hidden='true'></span>
+    <span class='ml-3'>Work</span>
+  </h2>
+  <ol class='mt-6 space-y-4'>
+    {
+      work.map((job) => (
+        <li>
+          <a
+            href={`${import.meta.env.BASE_URL}work/${job.id}/`}
+            class='group p-2 ui-focus-ring rounded-xl flex gap-4 transition -m-2 hover:bg-heavenlyPink/50 dark:hover:bg-grapeade/30'
+          >
+            <EntityLogo
+              src={job.data.image}
+              alt={job.data.company}
+              background={job.data.logoBackground}
+              decorative
+              size='sm'
+              class='mt-1'
+            />
+            <dl class='flex flex-auto flex-wrap gap-x-2'>
+              <dt class='sr-only'>Company</dt>
+              <dd class='text-sm text-primary font-medium flex-none w-full transition group-hover:text-accent'>
+                {job.data.company}
+              </dd>
+              <dt class='sr-only'>Role</dt>
+              <dd class='text-xs text-secondary'>
+                {job.data.role}
+                {job.data.type === 'consulting' && ' (Consulting)'}
+              </dd>
+              <dt class='sr-only'>Date</dt>
+              <dd
+                class='text-xs text-secondary ml-auto'
+                aria-label={formatDateRange(job.data.startyear, job.data.endyear)}
+              >
+                {formatDateRange(job.data.startyear, job.data.endyear)}
+              </dd>
+            </dl>
+          </a>
+        </li>
+      ))
+    }
+  </ol>
+</div>

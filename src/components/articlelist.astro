@@ -1,0 +1,46 @@
+---
+import { getCollection } from 'astro:content'
+
+let articles = await getCollection('article')
+articles = articles.sort((a, b) =>
+  a.data.pubDate && b.data.pubDate ? +b.data.pubDate - +a.data.pubDate : 0
+)
+---
+
+<div class='flex flex-col gap-16'>
+  {
+    articles.map((article) => (
+      <article class='group flex flex-col items-start relative'>
+        {article.data.pubDate && (
+          <time
+            class='text-sm text-secondary mb-2 pl-3.5 flex items-center order-first relative z-10'
+            datetime={article.data.pubDate.toISOString()}
+          >
+            <span class='flex items-center inset-y-0 left-0 absolute' aria-hidden='true'>
+              <span class='rounded-full bg-barelyPink h-4 w-0.5 dark:bg-morningGlory' />
+            </span>
+            {article.data.pubDate.toDateString()}
+          </time>
+        )}
+        <div class='bg-heavenlyPink opacity-0 scale-95 transition duration-300 ease-in-out absolute z-0 sm:rounded-2xl dark:bg-grapeade/30 group-hover:opacity-100 group-hover:scale-100 -inset-x-4 -inset-y-6 sm:-inset-x-6' />
+        <h2 class='text-lg text-accent tracking-tight font-semibold font-serif'>
+          <a
+            href={`${import.meta.env.BASE_URL}article/${article.id}/`}
+            class='ui-focus-ring rounded-xl'
+          >
+            <span class='absolute z-20 sm:rounded-2xl -inset-x-4 -inset-y-6 sm:-inset-x-6' />
+            <span class='relative z-10'>{article.data.title}</span>
+          </a>
+        </h2>
+        <p class='text-sm text-secondary mt-2 relative z-10'>{article.data.description}</p>
+        <div
+          aria-hidden='true'
+          class='text-sm text-accent font-medium mt-2 flex items-center relative z-10'
+        >
+          Read article
+          <span class='i-heroicons-chevron-right ml-1 h-4 w-4 stroke-current' />
+        </div>
+      </article>
+    ))
+  }
+</div>

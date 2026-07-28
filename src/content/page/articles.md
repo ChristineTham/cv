@@ -1,0 +1,9 @@
+---
+order: 20
+layout: ../layouts/articles.astro
+title: Writing on Life, the Universe and Everything.
+shorttitle: Articles
+description: Some of my long-form thoughts on life, the universe, and everything, collected in chronological order.
+---
+
+These articles are where I explore thoughts on various topics. The collection is arranged chronologically so you can follow how these perspectives have evolved over time.

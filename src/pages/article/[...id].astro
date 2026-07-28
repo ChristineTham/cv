@@ -1,0 +1,71 @@
+---
+import type { CollectionEntry } from 'astro:content'
+import { getCollection, render } from 'astro:content'
+import Layout from '../../layouts/layout.astro'
+import Container from '../../components/container.astro'
+
+// 1. Generate a new path for every collection article
+export async function getStaticPaths() {
+  const articles = await getCollection('article')
+  return articles.map((article) => ({
+    params: { id: article.id },
+    props: { article }
+  }))
+}
+
+// 2. When it's time to render, you can get the article directly from the prop
+interface Props {
+  article: CollectionEntry<'article'>
+}
+const { article } = Astro.props
+const { Content } = await render(article)
+---
+
+<Layout
+  title={article.data.title || ''}
+  description={article.data.description!}
+  article={true}
+  pubDate={article.data.pubDate}
+>
+  <Container class='mt-16 lg:mt-32'>
+    <div class='xl:relative'>
+      <div class='mx-auto max-w-2xl'>
+        <button
+          onclick='window.history.back()'
+          type='button'
+          aria-label='Go back to articles'
+          class='group mb-8 rounded-full bg-sugarSwizzle flex h-10 w-10 ring-1 ring-opalGray/20 shadow-md transition items-center justify-center lg:mb-0 xl:mt-0 dark:border dark:border-border/50 dark:bg-blackBeauty dark:ring-0 dark:ring-opalGray/20 xl:left-0 lg:absolute lg:-mt-2 dark:hover:border-border/70 dark:hover:ring-opalGray/30 lg:-left-5 xl:-top-1.5'
+          ><span
+            class='i-heroicons-arrow-left h-4 w-4 transition stroke-graniteGray dark:stroke-opalGray group-hover:stroke-blackBeauty dark:group-hover:stroke-sugarSwizzle'
+          ></span></button
+        >
+        <article>
+          <header class='flex flex-col'>
+            <h1 class='text-4xl text-accent tracking-tight font-bold font-serif sm:text-5xl'>
+              {article.data.title}
+            </h1>
+            {
+              article.data.pubDate && (
+                <time
+                  datetime={article.data.pubDate.toISOString()}
+                  class='text-base text-graniteGray flex items-center order-first dark:text-opalGray'
+                >
+                  <>
+                    <span class='rounded-full bg-barelyPink h-4 w-0.5 dark:bg-morningGlory' />
+                    <span class='ml-3'>{article.data.pubDate.toDateString()}</span>
+                  </>
+                </time>
+              )
+            }
+          </header>
+          <p class='text-sm text-graniteGray mt-2 italic dark:text-opalGray'>
+            {article.data.description}
+          </p>
+          <div class='mt-8 prose dark:prose-invert'>
+            <Content />
+          </div>
+        </article>
+      </div>
+    </div>
+  </Container>
+</Layout>

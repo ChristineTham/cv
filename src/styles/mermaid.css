@@ -1,0 +1,445 @@
+/*
+ * Rosely theme for Mermaid diagrams, both light and dark.
+ *
+ * The themeVariables in astro.config.mjs still set the light palette at render time, and
+ * this file now restates it. That duplication is the point: it is what makes the
+ * appearance independent of when, or how often, a diagram is rendered.
+ *
+ * Mermaid bakes colours into each SVG as it renders, so a diagram's appearance is decided
+ * by whatever config was in force during that particular render. astro-mermaid renders
+ * from two places, once when its module runs and again on `astro:after-swap`, and a
+ * client-side navigation fires both — two passes racing over the same diagrams. Lose that
+ * race and a diagram keeps Mermaid's stock palette, looking nothing like the rest of the
+ * page, until something re-renders it. That is why reloading appeared to fix it: a full
+ * page load only ever runs one pass.
+ *
+ * With both themes stated here, the page decides how a diagram looks and decides the same
+ * way every time, whatever any render pass baked in. Dark rules simply carry an extra
+ * `.dark` class and so outrank their light counterparts.
+ *
+ * Everything is `!important`. Mermaid injects a <style> block into each SVG scoped by the
+ * diagram's generated id (`#mermaid-abc123 .nodeLabel`), and an ID selector beats a class
+ * rule. xychart and quadrant were the exception when they painted with presentation
+ * attributes, but their text is styled from that same block, which is why the dark chart
+ * titles and tick labels were unreadable until these were flagged too.
+ */
+
+/* ---- Shiki code blocks ------------------------------------------------ */
+
+/*
+ * Shiki's dual-theme output: `defaultColor: 'light'` inlines the light colours and puts
+ * the dark ones in --shiki-dark custom properties on every token span. Swapping them is
+ * this one rule. `!important` because the inline light value is a style attribute.
+ */
+
+.dark .astro-code,
+.dark .astro-code span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+  font-style: var(--shiki-dark-font-style) !important;
+}
+
+/* ---- The diagram container -------------------------------------------- */
+
+/*
+ * Mermaid diagrams are authored as fenced code blocks, so the typography preset styles
+ * `pre.mermaid` as one: a dark slate panel with pale text meant to sit on it. That is
+ * right for a code sample and wrong the moment the source is replaced by an SVG — on the
+ * light page it puts a dark panel behind every diagram and leaves the container's
+ * inherited colour near-white. That is what "rendered in dark mode on a light theme"
+ * actually was, and it is pure CSS, which is why it looked like the page had picked the
+ * wrong theme rather than like something had failed.
+ *
+ * Reset it in both themes. The diagrams carry their own colours and sit directly on the
+ * page, transparent, exactly as the `background: 'transparent'` themeVariable intends.
+ */
+pre.mermaid,
+.prose pre.mermaid {
+  background-color: transparent !important;
+  background-image: none !important;
+  color: inherit !important;
+  border: 0 !important;
+}
+
+/* ---- Flowchart -------------------------------------------------------- */
+
+/*
+ * The light palette is stated here as well as in astro.config.mjs, and that duplication
+ * is deliberate.
+ *
+ * Mermaid bakes its colours into each SVG at render time, so which colours a diagram
+ * ends up with depends on the config in force during that render. astro-mermaid renders
+ * from two places — once when its module runs and again on `astro:after-swap` — and on a
+ * client-side navigation both fire, so two passes race over the same diagrams. Lose that
+ * race and a diagram keeps Mermaid's stock palette until something re-renders it, which
+ * is why a reload "fixed" it: a full load only ever runs one pass.
+ *
+ * Stating both themes in CSS takes the appearance out of the render entirely. Whatever
+ * any pass bakes in, the page decides how the diagram looks, and it decides the same way
+ * every time. `!important` throughout because Mermaid's injected <style> is scoped by the
+ * diagram's generated id, and an ID selector beats a class rule.
+ */
+.mermaid .label-container,
+.mermaid .node rect,
+.mermaid .node circle,
+.mermaid .node ellipse,
+.mermaid .node polygon,
+.mermaid .node path {
+  fill: #f4dede !important;
+  stroke: #b565a7 !important;
+}
+
+.mermaid .nodeLabel,
+.mermaid .nodeLabel p,
+.mermaid .label,
+.mermaid .label span {
+  color: #27272a !important;
+  fill: #27272a !important;
+}
+
+.mermaid .flowchart-link,
+.mermaid .edgePath .path {
+  stroke: #85677b !important;
+}
+
+.mermaid .marker,
+.mermaid .arrowMarkerPath {
+  fill: #85677b !important;
+  stroke: #85677b !important;
+}
+
+.mermaid .edgeLabel,
+.mermaid .edgeLabel p {
+  color: #27272a !important;
+  background-color: #faf7f4 !important;
+}
+
+.mermaid .edgeLabel rect,
+.mermaid .labelBkg {
+  fill: #faf7f4 !important;
+  background-color: #faf7f4 !important;
+}
+
+.mermaid .cluster rect {
+  fill: #faf7f4 !important;
+  stroke: #be9cc1 !important;
+}
+
+.dark .mermaid .label-container,
+.dark .mermaid .node rect,
+.dark .mermaid .node circle,
+.dark .mermaid .node ellipse,
+.dark .mermaid .node polygon,
+.dark .mermaid .node path {
+  fill: #3f3644 !important;
+  stroke: #be9cc1 !important;
+}
+
+.dark .mermaid .nodeLabel,
+.dark .mermaid .nodeLabel p,
+.dark .mermaid .label,
+.dark .mermaid .label span {
+  color: #f4eee8 !important;
+  fill: #f4eee8 !important;
+}
+
+.dark .mermaid .flowchart-link,
+.dark .mermaid .edgePath .path {
+  stroke: #be9cc1 !important;
+}
+
+.dark .mermaid .marker,
+.dark .mermaid .arrowMarkerPath {
+  fill: #be9cc1 !important;
+  stroke: #be9cc1 !important;
+}
+
+/* Edge labels float over the page, so they carry their own backing plate. */
+.dark .mermaid .edgeLabel,
+.dark .mermaid .edgeLabel p {
+  color: #f4eee8 !important;
+  background-color: #27272a !important;
+}
+
+.dark .mermaid .edgeLabel rect,
+.dark .mermaid .labelBkg {
+  fill: #27272a !important;
+  background-color: #27272a !important;
+}
+
+.dark .mermaid .cluster rect {
+  fill: #1f1f22 !important;
+  stroke: #615f5f !important;
+}
+
+/* ---- xychart ---------------------------------------------------------- */
+
+/*
+ * Both themes, and every rule `!important`, for the reason given at the head of the
+ * light-theme block below: the SVG's own <style> is an ID selector and beats a bare
+ * class rule. Without the flags the dark title and tick labels lost to the baked
+ * near-black and were all but invisible on the near-black page.
+ */
+.mermaid .chart-title text,
+.mermaid .bottom-axis .label text,
+.mermaid .left-axis .label text,
+.mermaid .bottom-axis .title text,
+.mermaid .left-axis .title text {
+  fill: #27272a !important;
+}
+
+.mermaid .bottom-axis .ticks path,
+.mermaid .left-axis .ticks path,
+.mermaid .axis-line,
+.mermaid .axisl-line {
+  stroke: #85677b !important;
+}
+
+.mermaid .bar-plot-0 rect,
+.mermaid .bar-plot-1 rect {
+  fill: #b565a7 !important;
+}
+
+.mermaid .line-plot-0 path,
+.mermaid .line-plot-1 path {
+  stroke: #b565a7 !important;
+}
+
+.dark .mermaid .chart-title text,
+.dark .mermaid .bottom-axis .label text,
+.dark .mermaid .left-axis .label text,
+.dark .mermaid .bottom-axis .title text,
+.dark .mermaid .left-axis .title text {
+  fill: #f4eee8 !important;
+}
+
+.dark .mermaid .bottom-axis .ticks path,
+.dark .mermaid .left-axis .ticks path,
+.dark .mermaid .axis-line,
+.dark .mermaid .axisl-line {
+  stroke: #a49e9e !important;
+}
+
+/* Lupine rather than the light theme's radiant orchid: brighter against near-black,
+   and still clears 3:1 for a filled shape. */
+.dark .mermaid .bar-plot-0 rect,
+.dark .mermaid .bar-plot-1 rect {
+  fill: #be9cc1 !important;
+}
+
+.dark .mermaid .line-plot-0 path,
+.dark .mermaid .line-plot-1 path {
+  stroke: #be9cc1 !important;
+}
+
+/* ---- Gantt ------------------------------------------------------------ */
+
+/*
+ * Gantt is the one diagram type that ignores its themeVariables here: `base` derives the
+ * section and task colours through its own theme logic, so `sectionBkgColor`,
+ * `taskBkgColor` and friends came out as Mermaid's stock blues and yellows however they
+ * were set. It is therefore driven from CSS in *both* themes rather than only in dark.
+ *
+ * These two charts are also a gantt bent into a diverging bar chart, which is why the
+ * `vert` marker bars exist at all — they are the -100/0/100 axis rules.
+ */
+
+.mermaid .section0,
+.mermaid .section2 {
+  fill: #faf6f2 !important;
+}
+
+.mermaid .section1,
+.mermaid .section3 {
+  fill: #f6eef0 !important;
+}
+
+.mermaid rect.done0,
+.mermaid rect.done1,
+.mermaid rect.done2,
+.mermaid rect.done3 {
+  fill: #d2c4d6 !important;
+  stroke: #85677b !important;
+}
+
+.mermaid rect.active0,
+.mermaid rect.active1,
+.mermaid rect.active2,
+.mermaid rect.active3 {
+  fill: #ec809e !important;
+  stroke: #c02d5a !important;
+}
+
+.mermaid rect.vert {
+  fill: #85677b !important;
+  stroke: #85677b !important;
+}
+
+.mermaid .titleText,
+.mermaid .sectionTitle,
+.mermaid .sectionTitle0,
+.mermaid .sectionTitle1,
+.mermaid .sectionTitle2,
+.mermaid .sectionTitle3,
+.mermaid .taskText,
+.mermaid .taskText0,
+.mermaid .taskText1,
+.mermaid .taskText2,
+.mermaid .taskText3,
+.mermaid .doneText0,
+.mermaid .doneText1,
+.mermaid .doneText2,
+.mermaid .doneText3,
+.mermaid .activeText0,
+.mermaid .activeText1,
+.mermaid .activeText2,
+.mermaid .activeText3,
+.mermaid .taskTextOutside0,
+.mermaid .taskTextOutside1,
+.mermaid .taskTextOutside2,
+.mermaid .taskTextOutside3,
+.mermaid .tick text {
+  fill: #27272a !important;
+}
+
+/*
+ * The vert markers are the only labels Mermaid paints from an id-scoped `!important`
+ * rule of its own (`#mermaid-abc .vertText { fill: navy !important }`), and no class
+ * selector can outrank an ID one however many classes it carries. Navy is legible
+ * enough on the cream page but all but disappears on the near-black one.
+ *
+ * A cascade layer settles it. For `!important` declarations the layer order is
+ * reversed, so a layered important beats an unlayered important outright, specificity
+ * never being compared across layers. Scoped to just these rules rather than the whole
+ * file, so nothing else has its cascade quietly rearranged.
+ */
+@layer mermaid-vert {
+  .mermaid .vertText {
+    fill: #27272a !important;
+  }
+
+  .dark .mermaid .vertText {
+    fill: #f4eee8 !important;
+  }
+}
+
+.dark .mermaid rect.vert {
+  fill: #be9cc1 !important;
+  stroke: #be9cc1 !important;
+}
+
+.dark .mermaid .titleText,
+.dark .mermaid .sectionTitle,
+.dark .mermaid .sectionTitle0,
+.dark .mermaid .sectionTitle1,
+.dark .mermaid .sectionTitle2,
+.dark .mermaid .sectionTitle3,
+.dark .mermaid .tick text {
+  fill: #f4eee8 !important;
+}
+
+.dark .mermaid .grid .tick line {
+  stroke: #4a4a4e !important;
+}
+
+.dark .mermaid .grid path {
+  stroke: #a49e9e !important;
+}
+
+.dark .mermaid .section0,
+.dark .mermaid .section2 {
+  fill: #2f2b32 !important;
+}
+
+.dark .mermaid .section1,
+.dark .mermaid .section3 {
+  fill: #262329 !important;
+}
+
+.dark .mermaid rect.done0,
+.dark .mermaid rect.done1,
+.dark .mermaid rect.done2,
+.dark .mermaid rect.done3 {
+  fill: #85677b !important;
+  stroke: #be9cc1 !important;
+}
+
+.dark .mermaid rect.active0,
+.dark .mermaid rect.active1,
+.dark .mermaid rect.active2,
+.dark .mermaid rect.active3 {
+  fill: #ec809e !important;
+  stroke: #f7caca !important;
+}
+
+/* Labels sitting inside a bar take the bar's contrast, not the page's: light on the
+   grapeade "done" bars, near-black on the pale pink "active" ones. */
+.dark .mermaid .doneText0,
+.dark .mermaid .doneText1,
+.dark .mermaid .doneText2,
+.dark .mermaid .doneText3 {
+  fill: #f4eee8 !important;
+}
+
+.dark .mermaid .activeText0,
+.dark .mermaid .activeText1,
+.dark .mermaid .activeText2,
+.dark .mermaid .activeText3 {
+  fill: #27272a !important;
+}
+
+.dark .mermaid .taskTextOutside0,
+.dark .mermaid .taskTextOutside1,
+.dark .mermaid .taskTextOutside2,
+.dark .mermaid .taskTextOutside3,
+.dark .mermaid .vertText {
+  fill: #f4eee8 !important;
+}
+
+/* ---- Quadrant chart --------------------------------------------------- */
+
+.mermaid .quadrants text,
+.mermaid .labels text,
+.mermaid .data-points text,
+.mermaid .title text {
+  fill: #27272a !important;
+}
+
+.mermaid .data-point circle {
+  fill: #d2386c !important;
+}
+
+.mermaid .border {
+  stroke: #85677b !important;
+}
+
+.dark .mermaid .quadrants > g:nth-of-type(1) rect {
+  fill: #443b4a;
+}
+
+.dark .mermaid .quadrants > g:nth-of-type(2) rect {
+  fill: #3a3340;
+}
+
+.dark .mermaid .quadrants > g:nth-of-type(3) rect {
+  fill: #2b282e;
+}
+
+.dark .mermaid .quadrants > g:nth-of-type(4) rect {
+  fill: #332f36;
+}
+
+.dark .mermaid .quadrants text,
+.dark .mermaid .labels text,
+.dark .mermaid .data-points text,
+.dark .mermaid .title text {
+  fill: #f4eee8 !important;
+}
+
+.dark .mermaid .data-point circle {
+  fill: #ec809e !important;
+}
+
+.dark .mermaid .border {
+  stroke: #a49e9e !important;
+}

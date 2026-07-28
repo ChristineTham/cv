@@ -1,0 +1,105 @@
+---
+import { Image } from 'astro:assets'
+import 'photoswipe/style.css'
+import Card1 from '../assets/me/Chris (1).jpeg'
+import Card2 from '../assets/me/Mayfield Garden (7).jpeg'
+import Card3 from '../assets/me/Mercure Centro (2).jpeg'
+import Card4 from '../assets/me/Oberon Dam (13).jpeg'
+import Card5 from '../assets/me/Mayfield Garden (107).jpeg'
+
+const cards = [Card1, Card2, Card3, Card4, Card5]
+const rotates = ['rotate-2', '-rotate-2', 'rotate-2', 'rotate-2', '-rotate-2']
+---
+
+<div class='mt-16 sm:mt-20'>
+  <div class='py-4 flex gap-5 justify-center overflow-hidden -my-4 sm:gap-8' data-pswp-gallery>
+    {
+      cards.map((card, i) => (
+        <div
+          class:list={[
+            'relative aspect-[9/10] w-44 flex-none overflow-hidden rounded-xl card-hover sm:w-72 sm:rounded-2xl',
+            rotates[i]
+          ]}
+        >
+          <a
+            href={card.src}
+            data-pswp-width={card.width}
+            data-pswp-height={card.height}
+            aria-label={`Open photo ${i + 1} in lightbox`}
+            class='group h-full w-full block cursor-zoom-in relative'
+          >
+            {/* alt='' marks the photo decorative: the wrapping anchor already carries the
+              accessible name. "Card" described the component, not the photograph — a text
+              alternative that is not one (WCAG 1.1.1, technique F30). */}
+            <Image
+              class='h-full w-full transition duration-300 ease-out inset-0 absolute object-cover group-hover:scale-105'
+              style='color:transparent'
+              src={card}
+              alt=''
+              width={512}
+              height={512}
+              loading='lazy'
+            />
+            <span
+              aria-hidden='true'
+              class='text-xs text-primary font-semibold px-2 py-1 rounded-full glass opacity-0 transition bottom-3 right-3 absolute group-hover:opacity-100'
+            >
+              <span class='i-heroicons-magnifying-glass-plus mr-1 align-middle h-4 w-4 inline-block' />
+              <span class='align-middle'>Zoom</span>
+            </span>
+          </a>
+        </div>
+      ))
+    }
+  </div>
+</div>
+
+<script>
+  let lightboxModulePromise: Promise<typeof import('photoswipe/lightbox')> | undefined
+
+  const loadLightboxModule = async () => {
+    if (!lightboxModulePromise) {
+      // Clear the cache on failure. A rejected promise left in place poisons every
+      // later call, so one dropped chunk disabled the lightbox for the whole session
+      // — including across client-side navigations, where the module scope survives.
+      lightboxModulePromise = import('photoswipe/lightbox').catch((error) => {
+        lightboxModulePromise = undefined
+        throw error
+      })
+    }
+    return lightboxModulePromise
+  }
+
+  const initPhotoSwipe = async () => {
+    const galleries = document.querySelectorAll<HTMLElement>('[data-pswp-gallery]')
+
+    if (galleries.length === 0) return
+
+    const lightboxModule = await loadLightboxModule()
+    const PhotoSwipeLightbox = lightboxModule.default
+
+    for (const gallery of galleries) {
+      if (gallery.dataset.pswpInitialized === 'true') continue
+
+      const lightbox = new PhotoSwipeLightbox({
+        gallery,
+        children: 'a[data-pswp-width][data-pswp-height]',
+        pswpModule: () => import('photoswipe')
+      })
+
+      lightbox.init()
+      gallery.dataset.pswpInitialized = 'true'
+    }
+  }
+
+  // Handled rather than discarded with `void`: a failed chunk load is not fatal —
+  // the images stay visible and simply do not zoom — but as an unhandled rejection it
+  // surfaced as a console error with no explanation.
+  const startPhotoSwipe = () =>
+    initPhotoSwipe().catch((error) => {
+      console.error('PhotoSwipe failed to initialise; images will not open in a lightbox', error)
+    })
+
+  startPhotoSwipe()
+  document.addEventListener('astro:page-load', startPhotoSwipe)
+</script>

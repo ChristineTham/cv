@@ -1,0 +1,56 @@
+---
+import { getCollection } from 'astro:content'
+import EntityLogo from './entitylogo.astro'
+import { formatDateRange } from '../utils/timeline'
+
+let education = await getCollection('education')
+education = education.sort((a, b) => {
+  const endA = a.data.endyear ?? 9999
+  const endB = b.data.endyear ?? 9999
+  if (endB !== endA) return endB - endA
+  return b.data.startyear - a.data.startyear
+})
+---
+
+<div class='p-6 card rounded-2xl'>
+  <h2 class='text-lg text-accent font-semibold font-serif flex items-center'>
+    <span class='i-heroicons-academic-cap text-secondary h-6 w-6' aria-hidden='true'></span>
+    <span class='ml-3'>Education</span>
+  </h2>
+  <ol class='mt-6 space-y-4'>
+    {
+      education.map((item) => (
+        <li>
+          <a
+            href={`${import.meta.env.BASE_URL}education/${item.id}/`}
+            class='group p-2 ui-focus-ring rounded-xl flex gap-4 transition -m-2 hover:bg-heavenlyPink/50 dark:hover:bg-grapeade/30'
+          >
+            <EntityLogo
+              src={item.data.image}
+              alt={item.data.institution}
+              background={item.data.logoBackground}
+              decorative
+              variant='wide'
+              class='mt-1'
+            />
+            <dl class='flex flex-auto flex-wrap gap-x-2'>
+              <dt class='sr-only'>Institution</dt>
+              <dd class='text-sm text-primary font-medium flex-none w-full transition group-hover:text-accent'>
+                {item.data.institution}
+              </dd>
+              <dt class='sr-only'>Degree</dt>
+              <dd class='text-xs text-secondary'>{item.data.degree}</dd>
+              <dt class='sr-only'>Date</dt>
+              <dd
+                class='text-xs text-secondary ml-auto'
+                aria-label={formatDateRange(item.data.startyear, item.data.endyear)}
+              >
+                {formatDateRange(item.data.startyear, item.data.endyear)}
+              </dd>
+            </dl>
+          </a>
+        </li>
+      ))
+    }
+  </ol>
+</div>

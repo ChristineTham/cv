@@ -1,0 +1,50 @@
+---
+import { Image } from 'astro:assets'
+import Avatar from '../assets/me/avatar.jpg'
+import Navbar from './navbar.astro'
+import Search from './search.astro'
+import Theme from './theme.astro'
+import Container from './container.astro'
+
+interface Props {
+  home?: boolean
+}
+
+const { home = false } = Astro.props
+---
+
+<header class='pointer-events-none relative z-50'>
+  <Container>
+    <div class='mx-auto max-w-2xl lg:max-w-5xl'>
+      <div class='py-6 flex items-center justify-between relative'>
+        <div class='flex flex-1 basis-0'>
+          {
+            !home && (
+              <div class='p-0.5 rounded-full glass h-10 w-10 -ml-0.5'>
+                <a
+                  aria-label='Home'
+                  class='pointer-events-auto'
+                  href={`${import.meta.env.BASE_URL}`}
+                >
+                  <Image
+                    src={Avatar}
+                    alt='Avatar'
+                    width={128}
+                    height={128}
+                    loading='eager'
+                    class='rounded-full surface h-9 w-9 object-cover'
+                  />
+                </a>
+              </div>
+            )
+          }
+        </div>
+        <div class='flex flex-1 basis-0 items-center justify-end'>
+          <Navbar />
+          <Search />
+          <Theme />
+        </div>
+      </div>
+    </div>
+  </Container>
+</header>

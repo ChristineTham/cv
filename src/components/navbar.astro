@@ -1,0 +1,115 @@
+---
+import NavMenu from './navmenu.astro'
+---
+
+<div class='flex flex-1 items-center justify-end lg:justify-center'>
+  <div class='pointer-events-auto lg:hidden'>
+    <button
+      id='mobile-menu-button'
+      class='mobile-menu-button group text-sm text-primary ui-hover-accent font-medium px-4 py-2 ui-focus-ring rounded-full glass flex items-center'
+      type='button'
+      aria-expanded='false'
+      aria-controls='mobile-menu'
+    >
+      Menu
+      <span class='i-heroicons-chevron-down ml-3 h-4 w-4'></span>
+    </button>
+  </div>
+  <div
+    id='mobile-menu'
+    inert
+    class='opacity-0 pointer-events-none scale-95 transition-all duration-300 ease-in-out inset-x-4 top-20 absolute z-50 lg:hidden'
+  >
+    <div class='flex justify-center'>
+      <NavMenu />
+    </div>
+  </div>
+  <nav class='hidden pointer-events-auto lg:block'>
+    <NavMenu />
+  </nav>
+</div>
+
+<script>
+  let listenerCleanup: AbortController | null = null
+
+  const initNavbarMenu = () => {
+    const buttons = document.querySelectorAll('.mobile-menu-button')
+
+    buttons.forEach((button) => {
+      if (!(button instanceof HTMLElement) || button.dataset.menuInitialized === 'true') return
+
+      const menuId = button.getAttribute('aria-controls')
+      const menu = menuId ? document.getElementById(menuId) : null
+
+      if (!menu) return
+
+      listenerCleanup?.abort()
+      listenerCleanup = new AbortController()
+      const { signal } = listenerCleanup
+
+      // The closed menu is only visually hidden, so without `inert` its links stay
+      // focusable and remain in the accessibility tree.
+      const openMenu = () => {
+        menu.classList.remove('opacity-0', 'scale-95', 'pointer-events-none')
+        menu.classList.add('opacity-100', 'scale-100', 'pointer-events-auto')
+        menu.removeAttribute('inert')
+        button.setAttribute('aria-expanded', 'true')
+      }
+
+      const closeMenu = (returnFocus = false) => {
+        // Focus must leave before the subtree goes inert, or it lands on nothing.
+        if (menu.contains(document.activeElement) || returnFocus) {
+          button.focus()
+        }
+        menu.classList.add('opacity-0', 'scale-95', 'pointer-events-none')
+        menu.classList.remove('opacity-100', 'scale-100', 'pointer-events-auto')
+        menu.setAttribute('inert', '')
+        button.setAttribute('aria-expanded', 'false')
+      }
+
+      button.addEventListener(
+        'click',
+        () => {
+          if (menu.classList.contains('opacity-0')) {
+            openMenu()
+          } else {
+            closeMenu()
+          }
+        },
+        { signal }
+      )
+
+      // Close menu when clicking outside.
+      document.addEventListener(
+        'click',
+        (event) => {
+          const isClickInside =
+            button.contains(event.target as Node) || menu.contains(event.target as Node)
+          if (!isClickInside && !menu.classList.contains('opacity-0')) {
+            closeMenu()
+          }
+        },
+        { signal }
+      )
+
+      document.addEventListener(
+        'keydown',
+        (event) => {
+          if (event.key === 'Escape' && !menu.classList.contains('opacity-0')) {
+            closeMenu(true)
+          }
+        },
+        { signal }
+      )
+
+      button.dataset.menuInitialized = 'true'
+    })
+  }
+
+  initNavbarMenu()
+  document.addEventListener('astro:page-load', initNavbarMenu)
+  document.addEventListener('astro:before-swap', () => {
+    listenerCleanup?.abort()
+    listenerCleanup = null
+  })
+</script>

@@ -1,0 +1,404 @@
+---
+import Header from '../components/header.astro'
+import Footer from '../components/footer.astro'
+import { ClientRouter } from 'astro:transitions'
+import { getCollection } from 'astro:content'
+import type { ImageMetadata } from 'astro'
+import { Font, getImage } from 'astro:assets'
+// KaTeX's stylesheet, for the maths rendered at build time by rehype-katex. Imported in
+// the shared layout rather than per-article because markdown is not component-based, so
+// there is no narrower seam to hang it on; it costs ~7 KB gzipped on every page.
+import 'katex/dist/katex.min.css'
+// Dark-mode recolouring for Mermaid. The light palette is real Mermaid theming in
+// astro.config.mjs; see the header of this file for why dark has to be CSS.
+import '../styles/mermaid.css'
+
+import config from '../config.json' with { type: 'json' }
+// The previous default pointed at /screenshot.png in public/, which does not exist —
+// every page without its own image advertised a 404 as its social card. Import the
+// real asset so it is emitted and optimised like any other image.
+import defaultSocialImage from '../assets/screenshot.png'
+
+export interface Props {
+  title: string
+  description: string
+  image?: string | ImageMetadata
+  article?: boolean
+  pubDate?: Date
+  itemPage?: boolean
+  home?: boolean
+  /**
+   * Listing routes enumerate many child URLs, which is what schema.org CollectionPage
+   * describes; ItemPage is defined as a page devoted to a single item. Both are driven
+   * off `itemPage`, so this only selects which type that flag emits.
+   */
+  collectionPage?: boolean
+  /**
+   * Human label for the final breadcrumb crumb. Without it the crumb is the raw URL
+   * slug title-cased, which reads as "Nab", "Usyd", "Tfnsw" and "Hp" on every work and
+   * education detail page.
+   */
+  crumbLabel?: string
+}
+
+const {
+  title,
+  description,
+  image = defaultSocialImage,
+  article = false,
+  pubDate,
+  itemPage = false,
+  home = false,
+  collectionPage = false,
+  crumbLabel
+} = Astro.props
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site)
+
+let socialImageURL = typeof image === 'string' ? image : ''
+if (typeof image === 'object') {
+  const optimizedImage = await getImage({
+    src: image,
+    width: 1200,
+    height: 630,
+    format: 'jpg'
+  })
+  socialImageURL = optimizedImage.src
+}
+
+const finalSocialImageURL = new URL(socialImageURL, Astro.site || 'https://hellotham.com')
+
+const social = await getCollection('social')
+
+// The site lives under a base path, so Astro.site alone (https://hellotham.com) points
+// structured data at a different site — the apex domain is not this one.
+const siteHome = new URL(import.meta.env.BASE_URL, Astro.site).href
+
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: config.name,
+  url: siteHome,
+  description: config.description
+}
+
+const personSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: config.name,
+  url: siteHome,
+  // Absolute, matching the Article and ItemPage blocks on the same page — socialImageURL
+  // is the base-relative asset path, so the three nodes described one image three ways.
+  image: finalSocialImageURL.href,
+  sameAs: social.map((item) => item.data.link),
+  jobTitle: config.title,
+  worksFor: {
+    '@type': 'Organization',
+    name: config.organization
+  }
+}
+
+let articleSchema = {}
+if (article) {
+  articleSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: title,
+    description: description,
+    image: finalSocialImageURL,
+    datePublished: pubDate?.toISOString(),
+    author: {
+      '@type': 'Person',
+      name: config.name
+    }
+  }
+}
+
+let itemPageSchema = {}
+if (itemPage) {
+  itemPageSchema = {
+    '@context': 'https://schema.org',
+    '@type': collectionPage ? 'CollectionPage' : 'ItemPage',
+    name: title,
+    description: description,
+    image: finalSocialImageURL
+  }
+}
+
+const basePath = import.meta.env.BASE_URL
+
+// Strip the base as a prefix rather than filtering out segments that merely equal
+// its name — /spotlite/article/spotlite/ is a real URL, and filtering by name drops
+// the article's own crumb as well as the base.
+const relativePath = Astro.url.pathname.startsWith(basePath)
+  ? Astro.url.pathname.slice(basePath.length)
+  : Astro.url.pathname.replace(/^\//, '')
+const breadcrumbSegments = relativePath.split('/').filter((segment) => segment !== '')
+
+// Route segments whose listing page is named differently: entries live at
+// /article/[id] but the listing is /articles/. Anything absent maps to itself.
+const listingPage: Record<string, string> = { article: 'articles' }
+
+const breadcrumbList = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: breadcrumbSegments.reduce(
+    (acc, segment, index, array) => {
+      // Intermediate crumbs must point at a page that exists: /article/ itself
+      // 404s, so link the listing page instead of the partial path.
+      const target =
+        index === array.length - 1
+          ? array.slice(0, index + 1).join('/')
+          : (listingPage[segment] ?? segment)
+      // Only the final crumb can take crumbLabel: it is the one naming the entity this
+      // page is about. Title-casing the slug is the fallback, and it is a poor one —
+      // /work/nab/ becomes "Nab" rather than "NAB Group".
+      const isLast = index === array.length - 1
+      acc.push({
+        '@type': 'ListItem',
+        position: index + 2,
+        name:
+          isLast && crumbLabel ? crumbLabel : segment.charAt(0).toUpperCase() + segment.slice(1),
+        item: new URL(basePath + target + '/', Astro.site).href
+      })
+      return acc
+    },
+    [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: new URL(basePath, Astro.site).href
+      }
+    ]
+  )
+}
+---
+
+<!doctype html>
+<html
+  lang='en'
+  class:list={[
+    import.meta.env.DEV && 'dev-stable-render',
+    import.meta.env.DEV && 'dev-await-styles'
+  ]}
+>
+  <head>
+    <meta charset='UTF-8' />
+    <meta http-equiv='x-ua-compatible' content='ie=edge' />
+    <meta name='viewport' content='width=device-width,initial-scale=1' />
+    <Font cssVariable='--font-noto-sans' preload />
+    <Font cssVariable='--font-noto-serif' />
+    <Font cssVariable='--font-noto-sans-mono' />
+    <script is:inline>
+      const setTheme = () => {
+        // Touching localStorage throws outright when cookies/site data are blocked.
+        // This runs before anything else in the document, so an uncaught error here
+        // would kill theme init and every statement after it.
+        let stored
+        try {
+          stored = localStorage.getItem('theme')
+        } catch {
+          stored = null
+        }
+
+        const dark =
+          stored === 'dark' ||
+          (stored === null && window.matchMedia('(prefers-color-scheme: dark)').matches)
+
+        document.documentElement.classList.toggle('dark', dark)
+      }
+      setTheme()
+      document.addEventListener('astro:after-swap', setTheme)
+
+      if (document.documentElement.classList.contains('dev-await-styles')) {
+        const reveal = () => document.documentElement.classList.remove('dev-await-styles')
+        window.addEventListener('load', reveal, { once: true })
+        // Fallback in case a dev asset request is delayed.
+        setTimeout(reveal, 2000)
+      }
+    </script>
+    <style is:global>
+      :root {
+        --bg-pink: #fdf2f8;
+      }
+      html {
+        background-color: var(--bg-pink);
+        overflow-x: hidden;
+      }
+      html.dark {
+        background-color: #000;
+      }
+      body {
+        margin: 0;
+        font-family: var(--font-noto-sans);
+      }
+
+      .font-serif {
+        font-family: var(--font-noto-serif) !important;
+      }
+
+      .font-mono {
+        font-family: var(--font-noto-sans-mono) !important;
+      }
+
+      /*
+       * Let a wide table scroll inside its own box rather than push the page.
+       *
+       * A table will not wrap below the width its columns need, so on a 320px screen the
+       * SFIA table on /superpowers/ came out 333px wide. Nothing scrolled and nothing
+       * hinted at the problem, because html clips horizontal overflow: the last column was
+       * simply cut off the right-hand edge. Code blocks already solve this with their own
+       * `overflow-x: auto`; tables had nothing.
+       *
+       * `display: block` is what makes a table scrollable at all, since overflow does not
+       * apply to `display: table`. `width: max-content` then restores the natural sizing
+       * that block would otherwise throw away, and `max-width: 100%` is what actually
+       * triggers the scroll once the content exceeds the column.
+       */
+      .prose table {
+        display: block;
+        width: max-content;
+        max-width: 100%;
+        overflow-x: auto;
+      }
+      @keyframes fade-in-up-custom {
+        from {
+          opacity: 0;
+          transform: translateY(1rem);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .animate-fade-in-up {
+        animation: fade-in-up-custom 0.5s ease-out forwards;
+      }
+
+      /* Keep dev first paint stable by disabling entrance motion and transitions. */
+      .dev-stable-render *,
+      .dev-stable-render *::before,
+      .dev-stable-render *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+
+      .dev-stable-render .animate-fade-in-up {
+        opacity: 1 !important;
+        transform: none !important;
+      }
+
+      .dev-await-styles body {
+        opacity: 0;
+      }
+    </style>
+    <link rel='icon' href={`${import.meta.env.BASE_URL}favicon.ico`} sizes='any' />
+    <link rel='icon' href={`${import.meta.env.BASE_URL}favicon.svg`} type='image/svg+xml' />
+    <link rel='apple-touch-icon' href={`${import.meta.env.BASE_URL}apple-touch-icon.png`} />
+    <link rel='manifest' href={`${import.meta.env.BASE_URL}site.webmanifest`} />
+    <link rel='sitemap' href={`${import.meta.env.BASE_URL}sitemap-index.xml`} />
+    <link
+      rel='alternate'
+      type='application/rss+xml'
+      title='RSS'
+      href={`${import.meta.env.BASE_URL}rss.xml`}
+    />
+    <link rel='canonical' href={canonicalURL} />
+    <meta name='generator' content={Astro.generator} />
+    <title>{title}</title>
+    <meta name='description' content={description} />
+    <meta property='og:title' content={title} />
+    <meta property='og:description' content={description} />
+    <meta property='og:url' content={canonicalURL} />
+    <meta property='og:image' content={finalSocialImageURL} />
+    <meta property='og:type' content={article ? 'article' : 'website'} />
+    <meta name='twitter:card' content='summary_large_image' />
+    <meta name='twitter:title' content={title} />
+    <meta name='twitter:description' content={description} />
+    <meta name='twitter:image' content={finalSocialImageURL} />
+    <script is:inline type='application/ld+json' set:html={JSON.stringify(websiteSchema)} />
+    <script is:inline type='application/ld+json' set:html={JSON.stringify(personSchema)} />
+    {
+      article && (
+        <script is:inline type='application/ld+json' set:html={JSON.stringify(articleSchema)} />
+      )
+    }
+    {
+      itemPage && (
+        <script is:inline type='application/ld+json' set:html={JSON.stringify(itemPageSchema)} />
+      )
+    }
+    {
+      breadcrumbSegments.length > 0 && (
+        <script is:inline type='application/ld+json' set:html={JSON.stringify(breadcrumbList)} />
+      )
+    }
+    {!import.meta.env.DEV && <ClientRouter />}
+  </head>
+  <body>
+    {
+      /* WCAG 2.4.1 Bypass Blocks: the header repeats seven nav links plus the search and
+      theme controls on all 28 pages, so a keyboard user had to tab through the lot to
+      reach content, every time.
+
+      Parked off-screen with a transform rather than `sr-only focus:not-sr-only`: those
+      two are the same specificity, and `sr-only` is emitted later, so its
+      `position:static; width:1px; clip:rect(0,0,0,0)` won and the link stayed a 1px box
+      on focus — verified in the browser. A transform has nothing to lose against. */
+    }
+    <a
+      href='#main-content'
+      class='text-primary p-3 ui-focus-ring rounded-md bg-sugarSwizzle ring-1 ring-opalGray/30 shadow-md transition left-4 top-4 fixed z-50 dark:bg-blackBeauty -translate-y-20 focus:translate-y-0'
+    >
+      Skip to content
+    </a>
+    <div class='flex pointer-events-none inset-0 justify-center fixed'>
+      <div class='mx-auto flex max-w-7xl w-full pointer-events-none sm:px-8'>
+        <div
+          class='mx-auto bg-white w-full pointer-events-none ring-1 ring-pink-100 lg:px-8 dark:bg-zinc-900 dark:ring-pink-300/20'
+        >
+        </div>
+      </div>
+    </div>
+    <div class='flex flex-col min-h-screen relative z-10'>
+      <Header home={home} />
+      {
+        /* Scope the search index to page content. Without this Pagefind indexes the
+      whole body, so the nav, search and theme chrome repeated on all 28 pages made
+      common words match every page. */
+      }
+      {/* tabindex='-1' so the skip link can move focus here; it stays out of tab order. */}
+      <main id='main-content' tabindex='-1' class='flex-1' data-pagefind-body>
+        <slot />
+      </main>
+      <Footer />
+    </div>
+    <script is:inline>
+      // Preserve each Mermaid diagram's source before astro-mermaid can render over it.
+      //
+      // The integration stores the source itself, but only `if (!hasAttribute('data-diagram'))`
+      // and it runs initMermaid twice on load (once at module execution, once on
+      // astro:page-load). The two passes interleave across an await, so for whichever
+      // diagram is mid-render the second pass reads textContent that is already the
+      // rendered SVG and stores *that* as the source. Nothing breaks until something
+      // asks for a re-render — which is exactly what the theme switch now does — and
+      // then that diagram dies with "No diagram type detected".
+      //
+      // This runs during parse, ahead of the integration's deferred module, so the
+      // attribute is always populated from the real source first. The data-processed
+      // guard means a rendered diagram is never mistaken for one.
+      ;(() => {
+        const stampSources = () => {
+          for (const pre of document.querySelectorAll('pre.mermaid')) {
+            if (!pre.hasAttribute('data-diagram') && !pre.hasAttribute('data-processed')) {
+              pre.setAttribute('data-diagram', pre.textContent || '')
+            }
+          }
+        }
+        stampSources()
+        document.addEventListener('astro:page-load', stampSources)
+      })()
+    </script>
+  </body>
+</html>

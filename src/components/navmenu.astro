@@ -1,0 +1,40 @@
+---
+import { getCollection } from 'astro:content'
+
+let pages = await getCollection('page', ({ data }) => !data.draft)
+pages = pages.sort((a, b) => a.data.order - b.data.order)
+const current = Astro.url.pathname
+---
+
+<ul
+  class='text-base text-primary px-3 rounded-2xl glass flex flex-wrap gap-2 justify-center lg:rounded-full lg:flex-nowrap'
+>
+  {
+    pages.map((item) => (
+      <li>
+        <a
+          class:list={[
+            'relative block px-3 py-2 transition-colors duration-200 ui-focus-ring rounded-md',
+            current == `${import.meta.env.BASE_URL}${item.id}/` ||
+            current == `${import.meta.env.BASE_URL}${item.id}`
+              ? 'text-accent'
+              : 'ui-hover-accent'
+          ]}
+          href={`${import.meta.env.BASE_URL}${item.id}/`}
+          aria-current={
+            current == `${import.meta.env.BASE_URL}${item.id}/` ||
+            current == `${import.meta.env.BASE_URL}${item.id}`
+              ? 'page'
+              : undefined
+          }
+        >
+          {item.data.shorttitle}
+          {(current == `${import.meta.env.BASE_URL}${item.id}/` ||
+            current == `${import.meta.env.BASE_URL}${item.id}`) && (
+            <span class='h-px inset-x-1 absolute from-accent/0 to-accent/0 via-accent/40 bg-gradient-to-r -bottom-px' />
+          )}
+        </a>
+      </li>
+    ))
+  }
+</ul>

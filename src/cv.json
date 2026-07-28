@@ -1,0 +1,38 @@
+{
+  "name": "Chris Tham",
+  "headline": "Strategy Consultant | Technology Strategy, Architecture and Business Change",
+  "contact": {
+    "email": "chris@christham.net",
+    "phone": "+61 413 008 577",
+    "location": "Sydney, Australia",
+    "linkedin": "https://www.linkedin.com/in/christham",
+    "website": "https://christham.net/"
+  },
+  "summary": "Founder of Hello Tham, a boutique strategy consulting company. Available for short to medium term consulting engagements spanning strategic business change, business and operating model design, business process improvement, and technology strategy, architecture and solutions.",
+  "achievements": [
+    {
+      "title": "Flexible strategic change agent and thought leader",
+      "detail": "I have facilitated business and technology strategic change for three decades – from Head of Strategy positions at MLC, NAB and ING to delivering IT strategies, roadmaps and operating models as a consultant to Transfield Services and Transport for NSW (through my consulting company Hello Tham)."
+    },
+    {
+      "title": "Successful and proven technology strategy and architecture leader",
+      "detail": "I have built successful architecture practices at organisations from MLC (where I wrote my own job description and built a practice that became a case study at international conferences) to NAB, ING and Broadspectrum. I have provided enterprise architecture advice as a consultant to Transport for NSW and currently at Cochlear."
+    },
+    {
+      "title": "Recognised technology innovator and industry expert",
+      "detail": "I have been involved in new technologies for my entire career, from early beginnings managing one of Australia’s first commercial UNIX systems at Bain & Co (and also one of the earliest non-academic organisations to be on the Internet), to a patented service-oriented advice platform my team pioneered at MLC, to using a large language model to classify support calls in 2018, long before ChatGPT. Most recently I shaped Cochlear’s AI strategy. I teach Information Systems at Torrens University, and have written AI-dō, a book on using AI effectively."
+    }
+  ],
+  "onePage": {
+    "maxRoles": 3,
+    "maxBulletsPerRole": 2,
+    "minCompetencyLevel": 6,
+    "earlierCareerHeading": "Earlier career",
+    "maxEarlierRoles": 4
+  },
+  "full": {
+    "minCompetencyLevel": 5,
+    "detailedRoles": 3,
+    "maxBulletsPerEarlierRole": 4
+  }
+}

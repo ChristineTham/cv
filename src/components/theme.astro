@@ -1,0 +1,328 @@
+---
+
+---
+
+{
+  /* `relative` on the wrapper, matching search.astro. Without it the menu's containing
+  block was the nearest positioned ancestor further up the header, so `top-10` measured
+  from the header row rather than from the toggle and the panel opened on top of the
+  toggle, the search button and the last nav link at every width. */
+}
+<div class='flex justify-end relative'>
+  <div class='pointer-events-auto'>
+    <button
+      type='button'
+      id='theme-toggle-button'
+      aria-label='Toggle dark mode'
+      aria-expanded='false'
+      aria-haspopup='listbox'
+      aria-controls='theme-menu'
+      class='group px-3 py-2 ui-focus-ring rounded-full glass-hover'
+      ><svg
+        viewBox='0 0 24 24'
+        stroke-width='1.5'
+        stroke-linecap='round'
+        stroke-linejoin='round'
+        aria-hidden='true'
+        class='h-6 w-6 transition fill-sugarSwizzle stroke-graniteGray dark:hidden [@media(prefers-color-scheme:dark)]:fill-heavenlyPink group-hover:fill-sugarSwizzle [@media(prefers-color-scheme:dark)]:stroke-morningGlory group-hover:stroke-blackBeauty [@media(prefers-color-scheme:dark)]:group-hover:fill-heavenlyPink [@media(prefers-color-scheme:dark)]:group-hover:stroke-morningGlory'
+        ><path
+          d='M8 12.25A4.25 4.25 0 0 1 12.25 8v0a4.25 4.25 0 0 1 4.25 4.25v0a4.25 4.25 0 0 1-4.25 4.25v0A4.25 4.25 0 0 1 8 12.25v0Z'
+        ></path><path
+          d='M12.25 3v1.5M21.5 12.25H20M18.791 18.791l-1.06-1.06M18.791 5.709l-1.06 1.06M12.25 20v1.5M4.5 12.25H3M6.77 6.77 5.709 5.709M6.77 17.73l-1.061 1.061'
+          fill='none'></path></svg
+      ><svg
+        viewBox='0 0 24 24'
+        aria-hidden='true'
+        class='h-6 w-6 hidden transition fill-blackBeauty stroke-graniteGray dark:block [@media_not_(prefers-color-scheme:dark)]:fill-morningGlory/10 [@media_not_(prefers-color-scheme:dark)]:stroke-morningGlory [@media(prefers-color-scheme:dark)]:group-hover:stroke-opalGray'
+        ><path
+          d='M17.25 16.22a6.937 6.937 0 0 1-9.47-9.47 7.451 7.451 0 1 0 9.47 9.47ZM12.75 7C17 7 17 2.75 17 2.75S17 7 21.25 7C17 7 17 11.25 17 11.25S17 7 12.75 7Z'
+          stroke-width='1.5'
+          stroke-linecap='round'
+          stroke-linejoin='round'></path></svg
+      ></button
+    >
+  </div>
+  <div
+    id='theme-menu'
+    class='text-base text-primary font-medium mt-1 px-3 py-1 rounded-md glass max-h-56 w-60 hidden pointer-events-auto right-0 top-10 absolute z-20 overflow-auto'
+    tabindex='-1'
+    role='listbox'
+    aria-labelledby='theme-toggle-button'
+  >
+    <div
+      class='ui-hover-accent py-2 pl-2 pr-4 cursor-default select-none relative'
+      id='theme-auto'
+      role='option'
+      aria-selected='false'
+      tabindex='-1'
+    >
+      <div id='theme-auto-div' class='flex items-center'>
+        <span class='i-heroicons-star h-6 w-6'></span>
+        <span class='ml-1 block truncate'>Auto</span>
+      </div>
+      <span
+        id='theme-auto-check'
+        class='text-spearmint pr-4 flex hidden items-center inset-y-0 right-0 absolute'
+      >
+        <span class='i-heroicons-check h-5 w-5'></span>
+        <span class='sr-only'>(selected)</span>
+      </span>
+    </div>
+    <div
+      class='ui-hover-accent py-2 pl-2 pr-4 cursor-default select-none relative'
+      id='theme-light'
+      role='option'
+      aria-selected='false'
+      tabindex='-1'
+    >
+      <div class='flex items-center'>
+        <span class='i-heroicons-sun h-6 w-6'></span>
+        <span id='theme-light-span' class='ml-1 block truncate'>Light</span>
+      </div>
+      <span
+        id='theme-light-check'
+        class='text-spearmint pr-4 flex hidden items-center inset-y-0 right-0 absolute'
+      >
+        <span class='i-heroicons-check h-5 w-5'></span>
+        <span class='sr-only'>(selected)</span>
+      </span>
+    </div>
+    <div
+      class='ui-hover-accent py-2 pl-2 pr-4 cursor-default select-none relative'
+      id='theme-dark'
+      role='option'
+      aria-selected='false'
+      tabindex='-1'
+    >
+      <div class='flex items-center'>
+        <span class='i-heroicons-moon-solid h-6 w-6'></span>
+        <span id='theme-dark-span' class='ml-1 block truncate'>Dark</span>
+      </div>
+      <span
+        id='theme-dark-check'
+        class='text-spearmint pr-4 flex hidden items-center inset-y-0 right-0 absolute'
+      >
+        <span class='i-heroicons-check h-5 w-5'></span>
+        <span class='sr-only'>(selected)</span>
+      </span>
+    </div>
+  </div>
+</div>
+
+<script>
+  let listenerCleanup: AbortController | null = null
+
+  // Reading localStorage throws when cookies/site data are blocked.
+  const readStoredTheme = () => {
+    try {
+      return localStorage.getItem('theme')
+    } catch {
+      return null
+    }
+  }
+
+  const initThemeMenu = () => {
+    const button = document.getElementById('theme-toggle-button')
+    const menu = document.getElementById('theme-menu')
+    const autoBtn = document.getElementById('theme-auto')
+    const lightBtn = document.getElementById('theme-light')
+    const darkBtn = document.getElementById('theme-dark')
+
+    if (!button || !menu || button.dataset.themeInitialized === 'true') return
+
+    const updateUI = () => {
+      const theme = readStoredTheme()
+      const autoCheck = document.getElementById('theme-auto-check')
+      const lightCheck = document.getElementById('theme-light-check')
+      const darkCheck = document.getElementById('theme-dark-check')
+      const autoDiv = document.getElementById('theme-auto-div')
+      const lightSpan = document.getElementById('theme-light-span')
+      const darkSpan = document.getElementById('theme-dark-span')
+
+      if (autoCheck && lightCheck && darkCheck && autoDiv && lightSpan && darkSpan) {
+        autoCheck.classList.toggle('hidden', !!theme)
+        lightCheck.classList.toggle('hidden', theme !== 'light')
+        darkCheck.classList.toggle('hidden', theme !== 'dark')
+
+        autoBtn?.setAttribute('aria-selected', (!theme).toString())
+        lightBtn?.setAttribute('aria-selected', (theme === 'light').toString())
+        darkBtn?.setAttribute('aria-selected', (theme === 'dark').toString())
+
+        autoDiv.classList.toggle('font-semibold', !theme)
+        autoDiv.classList.toggle('text-accent', !theme)
+        autoDiv.classList.toggle('font-normal', !!theme)
+
+        lightSpan.classList.toggle('font-semibold', theme === 'light')
+        lightSpan.classList.toggle('text-accent', theme === 'light')
+        lightSpan.classList.toggle('font-normal', theme !== 'light')
+
+        darkSpan.classList.toggle('font-semibold', theme === 'dark')
+        darkSpan.classList.toggle('text-accent', theme === 'dark')
+        darkSpan.classList.toggle('font-normal', theme !== 'dark')
+      }
+    }
+
+    const updateTheme = () => {
+      const theme = readStoredTheme()
+      const dark =
+        theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)
+
+      document.documentElement.classList.toggle('dark', dark)
+      updateUI()
+    }
+
+    // Document- and window-level listeners outlive this DOM, and themeInitialized
+    // lives on a button that ClientRouter replaces on every navigation.
+    listenerCleanup?.abort()
+    listenerCleanup = new AbortController()
+    const { signal } = listenerCleanup
+
+    const options = [autoBtn, lightBtn, darkBtn].filter((el): el is HTMLElement => el !== null)
+
+    const isOpen = () => !menu.classList.contains('hidden')
+
+    const closeMenu = (returnFocus = true) => {
+      if (!isOpen()) return
+      menu.classList.add('hidden')
+      button.setAttribute('aria-expanded', 'false')
+      if (returnFocus) button.focus()
+    }
+
+    const openMenu = () => {
+      menu.classList.remove('hidden')
+      button.setAttribute('aria-expanded', 'true')
+      updateUI()
+      // Start on the active choice so keyboard users land where they already are.
+      const selected = options.find((el) => el.getAttribute('aria-selected') === 'true')
+      ;(selected || options[0])?.focus()
+    }
+
+    const applyTheme = (value: string | null) => {
+      try {
+        if (value === null) {
+          localStorage.removeItem('theme')
+        } else {
+          localStorage.setItem('theme', value)
+        }
+      } catch {
+        // Storage blocked: the theme still applies for this page view.
+      }
+      updateTheme()
+      closeMenu()
+    }
+
+    const themeForOption = (el: HTMLElement) =>
+      el === lightBtn ? 'light' : el === darkBtn ? 'dark' : null
+
+    button.addEventListener(
+      'click',
+      () => {
+        if (isOpen()) {
+          closeMenu()
+        } else {
+          openMenu()
+        }
+      },
+      { signal }
+    )
+
+    // Open on Down/Up from the button, matching the usual listbox pattern.
+    button.addEventListener(
+      'keydown',
+      (event) => {
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+          event.preventDefault()
+          openMenu()
+        }
+      },
+      { signal }
+    )
+
+    options.forEach((option, index) => {
+      option.addEventListener('click', () => applyTheme(themeForOption(option)), { signal })
+
+      option.addEventListener(
+        'keydown',
+        (event) => {
+          switch (event.key) {
+            case 'Enter':
+            case ' ':
+              event.preventDefault()
+              applyTheme(themeForOption(option))
+              break
+            case 'ArrowDown':
+              event.preventDefault()
+              options[(index + 1) % options.length].focus()
+              break
+            case 'ArrowUp':
+              event.preventDefault()
+              options[(index - 1 + options.length) % options.length].focus()
+              break
+            case 'Home':
+              event.preventDefault()
+              options[0].focus()
+              break
+            case 'End':
+              event.preventDefault()
+              options[options.length - 1].focus()
+              break
+            case 'Escape':
+              event.preventDefault()
+              closeMenu()
+              break
+            case 'Tab':
+              // Let focus leave naturally, but do not leave an open menu behind.
+              closeMenu(false)
+              break
+          }
+        },
+        { signal }
+      )
+    })
+
+    document.addEventListener(
+      'click',
+      (event) => {
+        const isClickInside =
+          button.contains(event.target as Node) || menu.contains(event.target as Node)
+        if (!isClickInside) {
+          // A click elsewhere already moved focus; do not yank it back.
+          closeMenu(false)
+        }
+      },
+      { signal }
+    )
+
+    document.addEventListener(
+      'keydown',
+      (event) => {
+        if (event.key === 'Escape' && isOpen()) {
+          closeMenu()
+        }
+      },
+      { signal }
+    )
+
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener(
+      'change',
+      () => {
+        if (!readStoredTheme()) {
+          updateTheme()
+        }
+      },
+      { signal }
+    )
+
+    // Initial UI state
+    updateUI()
+
+    button.dataset.themeInitialized = 'true'
+  }
+
+  initThemeMenu()
+  document.addEventListener('astro:page-load', initThemeMenu)
+  document.addEventListener('astro:before-swap', () => {
+    listenerCleanup?.abort()
+    listenerCleanup = null
+  })
+</script>

@@ -1,0 +1,25 @@
+---
+import Layout from './layout.astro'
+import PageContent from '../components/pagecontent.astro'
+import Superpowers from '../components/superpowers.astro'
+
+const { frontmatter } = Astro.props
+---
+
+<Layout
+  title={frontmatter.title}
+  description={frontmatter.description}
+  image={frontmatter.image}
+  itemPage={true}
+>
+  <div class='mt-16 sm:mt-32 sm:px-8'>
+    <div class='mx-auto max-w-7xl lg:px-8'>
+      <div class='px-4 relative lg:px-12 sm:px-8'>
+        <PageContent {frontmatter}>
+          <slot />
+        </PageContent>
+        <Superpowers showList={true} />
+      </div>
+    </div>
+  </div>
+</Layout>
