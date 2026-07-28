@@ -8,8 +8,8 @@ import { roselyLight, roselyDark } from './src/styles/shiki-rosely.ts'
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://hellotham.com',
-  base: '/spotlite/',
+  site: 'https://christham.net',
+  base: '/cv/',
   fonts: [
     {
       provider: fontProviders.fontsource(),
