@@ -1,8 +1,8 @@
 {
-  "name": "spotlite",
-  "description": "Astro CV and portfolio template",
+  "name": "cv",
+  "description": "Chris Tham Personal CV",
   "type": "module",
-  "version": "2.2.6",
+  "version": "1.0.0",
   "scripts": {
     "dev": "astro dev",
     "clean": "rm -rf node_modules .astro coverage dist",
