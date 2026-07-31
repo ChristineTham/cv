@@ -4,7 +4,7 @@ description: I have rebuilt thirty-five HP calculators, from the 1972 HP-35 to t
 pubDate: 2026-07-20
 ---
 
-A little while ago I wrote about [the HP 48 and the two programs I wrote for it](/spotlite/article/hp48/),
+A little while ago I wrote about [the HP 48 and the two programs I wrote for it](/cv/article/hp48/),
 which was a happy piece to put together because it let me go back through things I had not
 looked at in thirty years. It also left me wanting to do something rather more ambitious, and
 this is what came of it.

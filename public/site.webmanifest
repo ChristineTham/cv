@@ -1,10 +1,10 @@
 {
-  "name": "Spotlite",
-  "short_name": "spotlite",
-  "start_url": "/spotlite/",
-  "scope": "/spotlite/",
+  "name": "Chris Tham CV",
+  "short_name": "chris-tham-cv",
+  "start_url": "/cv/",
+  "scope": "/cv/",
   "icons": [
-    { "src": "/spotlite/icon-192.png", "type": "image/png", "sizes": "192x192" },
-    { "src": "/spotlite/icon-512.png", "type": "image/png", "sizes": "512x512" }
+    { "src": "/cv/icon-192.png", "type": "image/png", "sizes": "192x192" },
+    { "src": "/cv/icon-512.png", "type": "image/png", "sizes": "512x512" }
   ]
 }

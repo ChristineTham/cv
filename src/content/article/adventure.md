@@ -100,8 +100,8 @@ to conclusion, a perfect 430-point game, while you watch.
 You can [play it here](https://christham.net/adventure/), and the code is on
 [GitHub](https://github.com/ChristineTham/adventure).
 
-If you have read my pieces on [Hello Calc](/spotlite/article/hellocalc/) and
-[Rogoweb](/spotlite/article/rogoweb/), you will have spotted the pattern by now. I keep
+If you have read my pieces on [Hello Calc](/cv/article/hellocalc/) and
+[Rogoweb](/cv/article/rogoweb/), you will have spotted the pattern by now. I keep
 resurrecting the software of my youth. I have written about the method behind all three in
 [chapter three of my book](https://christham.net/aidou/software.html), but the short version is
 the one this project demonstrates best: say what you want, say how you will know it is right,

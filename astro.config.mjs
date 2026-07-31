@@ -167,8 +167,11 @@ export default defineConfig({
     sitemap({
       // The /cv/ routes exist only as a rendering source for the PDFs; they duplicate
       // site content and are marked noindex, so keep them out of the sitemap too.
-      filter: (page) =>
-        page !== 'https://hellotham.com/spotlite/404/' && !page.includes('/spotlite/cv/')
+      //
+      // Matched on the route rather than the full URL. The previous form hardcoded the
+      // template's own origin and base, so it quietly stopped excluding anything the
+      // moment the site was deployed anywhere else.
+      filter: (page) => !page.endsWith('/404/') && !/\/cv\/(onepage|full)\//.test(page)
     })
   ]
 })

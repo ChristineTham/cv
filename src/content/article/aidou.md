@@ -75,8 +75,8 @@ parts you need.
 | 6       | Mastery        | What stays distinctly human?                   |
 
 Chapter three is the one I have quoted here before, in the pieces on
-[Hello Calc](/spotlite/article/hellocalc/), [Rogoweb](/spotlite/article/rogoweb/) and
-[Adventure](/spotlite/article/adventure/). All three are running examples in it.
+[Hello Calc](/cv/article/hellocalc/), [Rogoweb](/cv/article/rogoweb/) and
+[Adventure](/cv/article/adventure/). All three are running examples in it.
 
 ## The name
 
@@ -104,7 +104,7 @@ The book is built the way it argues you should work, which seemed only fair.
 Every chapter is a single plain-text Markdown file, with the diagrams written in Mermaid.
 There is one source, and the website, the PDF and the ePub are all generated from it. Nothing
 is laid out twice by hand. If that sounds familiar it is the same idea behind
-[this site](/spotlite/article/spotlite/), where one folder of Markdown files produces the
+[this site](/cv/article/spotlite/), where one folder of Markdown files produces the
 pages and the CV.
 
 The look comes from a single file of design tokens. Every colour, type size and per-chapter

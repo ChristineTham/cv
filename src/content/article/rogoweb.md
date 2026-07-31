@@ -37,7 +37,7 @@ So, as a trip down memory lane, I have recreated the experience of running rogue
 in the browser.
 
 I want to be clear about what this is, because I wrote recently about
-[rebuilding every HP calculator](/spotlite/article/hellocalc/) and that project was the exact
+[rebuilding every HP calculator](/cv/article/hellocalc/) and that project was the exact
 opposite. Hello Calc is a reimplementation, with every function rewritten from scratch. This is
 not. This is the original source code, ported to run in WebAssembly as browser workers, with
 shared array buffers acting as the interprocess communication between the workers.
