@@ -243,9 +243,14 @@ reads like a list. Only looking tells you which.
 
 ## Finishing
 
-- Add the originals to wherever the project serves downloads, as a ZIP, and quote its real size in
-  the link text rather than guessing. In this project that is `cv/public/` and never
-  `spotlite/public/`; the originals are personal documents and `spotlite` is a public template.
+- Add the originals to wherever the project serves downloads, **each file on its own — do not bundle
+  them into a ZIP**, and quote each real size in the link text rather than guessing. A zip hides what
+  is in it, needs unpacking before anyone can look, and duplicates bytes that are already there. In
+  this project that is `cv/public/` and never `spotlite/public/`; the originals are personal
+  documents and `spotlite` is a public template.
+- **Do not archive HTML exports derived from the originals.** They are worth extracting and
+  comparing against — that comparison is the most valuable thing in this skill — but the finding
+  belongs in the preface, not the export in `public/`. The manuscript is the source of record.
 - Work in `cv` first, then backport to `spotlite`. Figures and article prose go to both; the
   archive and the download links pointing at it stay in `cv`. `sync-both` covers the mechanics.
 - Check the built page for overflow and contrast. **Point any audit at the right host and base

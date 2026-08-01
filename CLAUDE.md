@@ -71,9 +71,15 @@ The two places they diverge on purpose. `spotlite` is a public template: it ship
 nothing else.
 
 **The archive.** `cv` is a personal CV and `spotlite` has no business carrying a personal one, so
-**every original historical document — Word manuscripts, conference decks, scans, and the
-contemporaneous HTML exports — is committed to `cv/public/` and never to `spotlite/public/`.**
-`spotlite/public/` holds site chrome and the generated CV PDFs, nothing else.
+**every original historical document — Word manuscripts, conference decks and scans — is committed
+to `cv/public/` and never to `spotlite/public/`.** `spotlite/public/` holds site chrome and the
+generated CV PDFs, nothing else.
+
+Each original is served **as its own file, never bundled into a ZIP**: a zip hides its contents,
+needs unpacking before anyone can look, and duplicates bytes already committed alongside it. And
+the archive is the **sources**, not what was made from them — the contemporaneous HTML exports are
+worth extracting and diffing against the manuscript, but the finding goes in the article's preface
+and the export does not go in `public/`.
 
 **The tooling.** `.claude/`, `AGENTS.md` and this file exist in `cv` alone. They describe a
 two-repo workflow that only makes sense from the primary side, and much of what they say is about

@@ -51,9 +51,7 @@ oriented architecture" was coined in 1994 as a synonym for client/server. I had
 [given a paper on client/server architectures that same year](/cv/article/auug-1994/), which I did
 not know when I put the slide together._
 
-**[Download the presentation (ZIP, 243 KB)](/cv/banktech06.zip)**
-
-_Or the deck on its own: [Banktech06 NAB Chris Tham SOA.ppt](/cv/Banktech06%20NAB%20Chris%20Tham%20SOA.ppt) (464 KB)._
+**[Download the presentation (PPT, 464 KB)](/cv/Banktech06%20NAB%20Chris%20Tham%20SOA.ppt)**
 
 Chris Tham _Head of Architecture, Technology Australia, Retail Banking, NAB_
 

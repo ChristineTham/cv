@@ -39,11 +39,9 @@ into the AUUG'94 directory for a file byte-identical to the copy sitting beside 
 closing contact block is dropped, being a 1994 office address, phone, fax and email at a
 company that has not carried that name in thirty years. The words are otherwise as given._
 
-**[Download the Word manuscript, the deck and Oracle's paper template (ZIP, 182 KB)](/cv/oow94-original.zip)** ·
-**[Download the HTML and figures (ZIP, 46 KB)](/cv/oow94.zip)**
-
-_Or singly: [the manuscript](/cv/C_THAM.DOC) (509 KB) and [the deck](/cv/C_THAM.PPT) (246 KB); Oracle's
-paper template is in the ZIP only._
+**[Download the Word manuscript (DOC, 509 KB)](/cv/C_THAM.DOC)** ·
+**[Download the deck (PPT, 246 KB)](/cv/C_THAM.PPT)** ·
+**[Download Oracle's paper template (DOT, 8 KB)](/cv/OOW60.DOT)**
 
 ## Abstract
 
