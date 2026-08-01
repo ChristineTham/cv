@@ -93,6 +93,31 @@ Strategy" — which also changed the claim, from an operating budget to a strate
 So: **survey with a cap, quote from an uncapped re-extraction.** If a dump was truncated, do not
 repair it, regenerate it. And treat any sentence that ends suspiciously near the cap as unread.
 
+### A flattened table reads as prose, and invents defects
+
+`textutil` renders a Word table as a flat run of lines delimited by `\x07`. That character is
+invisible in a terminal and survives most cleanup, so a two-column table of labels and values
+arrives looking like prose — and its cell boundaries look like the author's typos.
+
+An APC review block came out of the dump as `PhoneEmail:  info@meedio.com`. That is a `Phone`
+label cell followed by a cell reading `Email: info@meedio.com`, which is only the author reusing
+a row rather than relabelling it. It was written into a preface as an authoring defect, next to a
+claim that the review blocks "are a flat run of labels and values in the Word file". Both were
+false: the file held four ordinary two-column tables, and the preface was describing an artefact
+of the converter as a fault in the source.
+
+**`\x07` in a text dump means a table.** Convert to HTML and read the structure before describing
+it, because that conversion keeps the cells:
+
+```bash
+"$SOFFICE" --headless --norestore -env:UserInstallation=file:///tmp/loprofile \
+  --convert-to html --outdir out/ "$SRC/paper.DOC"
+grep -c '<table' out/paper.html
+```
+
+The same mistake is available in the other direction. Reproducing a real table as prose loses a
+structure the author chose, so settle what the source actually is before deciding how to set it.
+
 ## Comparing the manuscript against an existing export
 
 This is where the value is. Squash **both** sides to lowercase alphanumerics with **no spaces at
@@ -208,16 +233,30 @@ missing = [p for p in source_paragraphs
            if len(sq(p)) >= 4 and sq(p) not in haystack and not in_any_figure(sq(p))]
 ```
 
-Three things that make the difference between a check that works and one that lies:
+Five things that make the difference between a check that works and one that lies:
 
 - **Search the figures too.** Text that moved into an SVG has not been lost. Read every `<tspan>`
   in each referenced figure and search that as well, or every diagram will read as a total loss.
 - **`html.unescape` before squashing.** SVG stores `&` as `&amp;`, so squashing raw markup injects
   `amp` into the middle of every label and "Finance & Corporate" stops matching itself. Eight
   phantom losses in one run came from this alone.
+- **Take table cells as units, not whole tables.** A table you have re-set in Markdown will not
+  match as one string, because the labels and values interleave differently — four review blocks
+  reported as total losses on a reproduction that had lost nothing in them. Feed each cell in
+  separately, from the HTML conversion above.
+- **The `>= 4` above skips short values silently.** `sq('2.5')` is two characters, so a verdict, a
+  price of "Free", a phone of "N/A" and every other short cell is never checked at all. Blanking a
+  `2.5` in a finished article scored a clean pass. Keep the threshold for prose, then check the
+  short cells separately, each inside its own section rather than against the whole file.
 - **Expect to triage.** A check tuned quiet enough not to need triage is tuned quiet enough to
   miss a handful of wrong characters at the end of a long paragraph, which is precisely where
   invented text hides. Noise is the price; pay it.
+
+And **prove the check can fail before believing it passes.** A clean result on the first run is
+as likely to mean a broken check as a faithful article. Injecting five faults into a finished
+reproduction — a dropped sentence, one changed word, a truncated paragraph, a deleted list item,
+a blanked table cell — caught four and missed the fifth, which is how the threshold above was
+found. It costs one run.
 
 Every surviving difference then goes in the preface, named. "556 of the source's 557 paragraphs
 appear verbatim, and here is the one that does not" is a much stronger claim than silence.
