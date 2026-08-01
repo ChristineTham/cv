@@ -40,8 +40,7 @@ closing contact block is dropped, being a 1994 office address, phone, fax and em
 company that has not carried that name in thirty years. The words are otherwise as given._
 
 **[Download the Word manuscript (DOC, 509 KB)](/cv/C_THAM.DOC)** ·
-**[Download the deck (PPT, 246 KB)](/cv/C_THAM.PPT)** ·
-**[Download Oracle's paper template (DOT, 8 KB)](/cv/OOW60.DOT)**
+**[Download the deck (PPT, 246 KB)](/cv/C_THAM.PPT)**
 
 ## Abstract
 
