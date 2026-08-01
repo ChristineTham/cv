@@ -1,6 +1,6 @@
-# Spotlite — Astro CV and Portfolio Template
+# Chris Tham's CV — Astro CV and portfolio site
 
-Spotlite generates a professional CV — two print-ready PDFs and a browsable site — from a single set of Markdown files, built with **Astro** and **UnoCSS**. The CV is the deliverable; the portfolio site around it is where the detail the PDF had to omit lives.
+This repository generates a professional CV — two print-ready PDFs and a browsable site — from a single set of Markdown files, built with **Astro** and **UnoCSS**. The CV is the deliverable; the portfolio site around it is where the detail the PDF had to omit lives.
 
 `README.md` documents the project for a human setting it up. This file is for coding agents: what the project is, how it is put together, and — in the Traps section — the specific things that have cost real debugging time. `DESIGN.md` covers the visual system.
 
@@ -11,7 +11,7 @@ The same codebase is deployed twice, and **this brief lives in `cv` only.** The 
 Two audiences at once, and the tension between them explains most design decisions:
 
 - **A professional record.** Employers and recruiters read the work history, and two CV PDFs are generated from the same content. Career facts are a document of record — nothing in the pipeline may reword, summarise or infer one.
-- **A reusable MIT-licensed template.** Anything hard-coded to one person's biography is a defect in the template. Content lives in collections; the code stays generic.
+- **The upstream of a reusable template.** `hellotham/spotlite` is this same codebase published under MIT for anyone to fork, and it is produced from here by subtraction. So biography belongs in `src/content/` and the `src/*.json` files, never in the code — anything hard-coded into a component becomes a defect in the template.
 
 Tone is professional but not corporate-bland. All prose is **Australian English**.
 

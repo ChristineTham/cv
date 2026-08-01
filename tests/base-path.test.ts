@@ -15,7 +15,7 @@ const walk = (dir: string, extension: string): string[] =>
   })
 
 /**
- * astro.config.mjs sets `base: '/spotlite/'`, so every internal URL has to be built
+ * astro.config.mjs sets `base: '/cv/'`, so every internal URL has to be built
  * from import.meta.env.BASE_URL. A root-relative literal such as href="/education/x"
  * resolves off the base and 404s in production.
  *

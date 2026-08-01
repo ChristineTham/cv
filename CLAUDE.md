@@ -59,6 +59,12 @@ Both deploy to GitHub Pages on push to `main`. Wait for the run and check the SH
 note that a `cd` earlier in a compound command persists, so a `git push` labelled "spotlite" can
 easily push `cv` twice. Confirm with `git log origin/main..HEAD` per repo.
 
+**`/sync-both` performs all of this** — the backport, both check suites, a primary-first commit and
+push using `git -C`, and the per-repo deploy confirmation. It carries
+`disable-model-invocation: true`, so it never appears in an assistant's own skill list and has to be
+asked for by name. Suggest it rather than reproducing its steps by hand: hand-running them is where
+both the `cd` leak and the unverified deploy come from.
+
 ### Two things are kept in `cv` only
 
 The two places they diverge on purpose. `spotlite` is a public template: it ships the site, and

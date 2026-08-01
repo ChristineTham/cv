@@ -24,7 +24,7 @@ describe('PDF Generation Script', () => {
   })
 
   it('serves dist over HTTP at the configured base path', () => {
-    // base: '/spotlite/' means every asset URL is base-prefixed; loading the page from
+    // base: '/cv/' means every asset URL is base-prefixed; loading the page from
     // the filesystem would 404 them all and silently emit an unstyled PDF.
     expect(script).toContain('http.createServer')
     // The origin must carry the base, and the base must be read from the real config

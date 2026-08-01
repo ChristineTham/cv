@@ -23,9 +23,12 @@ PAIR = {'spotlite': 'cv', 'cv': 'spotlite'}
 BASE = {'spotlite': '/spotlite/', 'cv': '/cv/'}
 # Only content and source travel between the repos. Build output and local notes do not.
 # DESIGN.md is watched because it is now the one root document shared by both, and so the one
-# that can drift unnoticed. README.md is deliberately not watched: it is a different document in
-# each repo, a personal note in cv and the template's front page in spotlite.
-WATCHED = ('src/', 'public/', 'scripts/', 'DESIGN.md')
+# that can drift unnoticed. tests/ is watched because two of its comments sat asserting cv's base
+# was '/spotlite/' -- invisible to the twin diff, since that normalises to what spotlite's correct
+# copy normalises to, and only foreign_base can see it. README.md is deliberately not watched: it
+# is a different document in each repo, the full project README in cv and the template's front
+# page in spotlite.
+WATCHED = ('src/', 'public/', 'scripts/', 'tests/', 'DESIGN.md')
 SKIP = ('dist/', 'node_modules/', '.astro/', 'coverage/')
 
 # Two quite different things live in cv and never in spotlite.
