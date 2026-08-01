@@ -94,7 +94,7 @@ download link: the standalone `**[Download …]**` lines are dropped, and where 
 sentence the sentence keeps its words and loses the link. So these differ by design, and a
 base-normalised diff of them is _expected_ to show the download lines and nothing else:
 
-- `src/content/article/{auug-1993,auug-1994,openworld-1994,crypt-usenix91,suntech-1990}.md`
+- `src/content/article/{auug-1993,auug-1994,openworld-1994,crypt-usenix91,suntech-1990,banktech-2006}.md`
 - `src/content/page/education.md`
 
 `.claude/hooks/check-sibling-repo.py` holds all three lists. It **refuses** a historical document

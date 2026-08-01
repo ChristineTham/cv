@@ -64,6 +64,7 @@ MAY_DIVERGE = (
     'src/content/article/openworld-1994.md',
     'src/content/article/crypt-usenix91.md',
     'src/content/article/suntech-1990.md',
+    'src/content/article/banktech-2006.md',
     'src/content/page/education.md',
 )
 

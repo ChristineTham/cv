@@ -92,13 +92,46 @@ AMERICAN = [
 ]
 
 
+# A link destination: bare, or wrapped in pointy brackets (the CommonMark form used when the URL
+# itself contains parentheses, as one Wikipedia link here does), optionally carrying a title. The
+# bare branch tolerates one level of balanced parentheses so a naive match cannot stop mid-URL.
+LINK_DEST = (r'\(\s*(?:<[^>]*>|[^()\s]*(?:\([^()]*\)[^()\s]*)*)'
+             r'(?:\s+"[^"]*")?\s*\)')
+
+# Link text, which may contain backslash-escaped brackets but not raw ones. The escape branch is
+# not decoration: the Rubato thesis cites its bibliography as [\[1\]](#ref-1) forty-three times,
+# and a text pattern of [^\[\]]* refuses every one of them.
+LINK_TEXT = r'(?:[^\[\]\\]|\\.)*'
+
+
 def body(text):
-    """Strip frontmatter, fenced code and inline HTML anchors, keeping the prose."""
+    """Strip frontmatter, fenced code, inline HTML anchors and link URLs, keeping the prose.
+
+    Link destinations are removed because nobody reads them as words. Left in, one inline link
+    adds a dozen or more "words" to its sentence and its `](` counts as a parenthetical aside, so
+    a link-heavy article measures as long-winded and parenthesis-ridden when it is neither. The
+    corpus baselines come from articles with almost no links, which is what makes this bite: the
+    yardstick has none of the noise being measured against it.
+
+    Link text stays, because that is what the reader sees. An image keeps its `![alt]` marker,
+    which prose_paragraphs and the exclamation count both rely on.
+    """
     if text.startswith('---\n'):
         parts = text.split('---\n', 2)
         text = parts[2] if len(parts) > 2 else text
     text = re.sub(r'(?s)```.*?```', '', text)
     text = re.sub(r'<a id="[^"]*"></a>', '', text)
+    # Link reference definitions, which are a whole line of URL. The label must not open with ^:
+    # that would be a footnote definition, whose body is real prose and has to be counted.
+    text = re.sub(r'(?m)^\[[^^\]][^\]]*\]:[ \t]*<?(?:https?://|/)\S*>?.*$', '', text)
+    text = re.sub(r'(!?)\[(' + LINK_TEXT + r')\]' + LINK_DEST,
+                  lambda m: f'![{m.group(2)}]' if m.group(1) else m.group(2), text)
+    # Bare autolinks, then bare URLs typed straight into a sentence. Both run after the pass
+    # above so neither can eat a destination before it is matched. The URL pattern stops short
+    # of a closing bracket, or a citation written as (http://…) would lose its opening paren
+    # and leave the parenthetical count worse than it started.
+    text = re.sub(r'<(?:https?://|mailto:)[^>]*>', '', text)
+    text = re.sub(r'https?://[^\s)\]]*', '', text)
     return text
 
 
