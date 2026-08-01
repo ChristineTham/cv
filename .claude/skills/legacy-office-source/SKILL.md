@@ -78,6 +78,21 @@ Word also justifies with discretionary hyphens, so extracted text is full of `pr
 `dis tributed`, `com ple xi ty`. Do not try to repair these by rule; handle them in the
 comparison instead.
 
+### Never finish a truncated line from inference
+
+Dumps get written with a per-line cap — `[:150]`, `head -c`, a column limit in a table — to keep
+the survey readable. That is fine for surveying. It is **not** fine as the text you then quote
+from, and the failure is silent: a sentence cut at 150 characters still reads as a whole sentence,
+so the temptation is to complete it from context and move on.
+
+Two quotations in one article were invented exactly this way. A slide reading "ensuring programs
+implement agreed solutions" was cut at "…implement" and published as "implement them". Another
+reading "as well as Technology budget" was cut at "as well as T" and published as "Technology
+Strategy" — which also changed the claim, from an operating budget to a strategy programme.
+
+So: **survey with a cap, quote from an uncapped re-extraction.** If a dump was truncated, do not
+repair it, regenerate it. And treat any sentence that ends suspiciously near the cap as unread.
+
 ## Comparing the manuscript against an existing export
 
 This is where the value is. Squash **both** sides to lowercase alphanumerics with **no spaces at
@@ -175,6 +190,57 @@ For an article reproducing a paper, the embedded object wins. Reach for the slid
 figure is not an embedded object and has no cache — and say in the preface that it came from the
 deck. Where colours differ between sources, that difference is itself worth a sentence.
 
+## Verify the finished article against the source
+
+Do this **after the article is written**, not only while extracting. It is a different check from
+the one above: that one compares the source against an existing export, this one compares the
+source against the thing you just produced. Run it before calling the work done, every time.
+
+Compare **paragraph by paragraph**, not as one character stream. A stream diff punishes reordering
+— and reordering is exactly what happens when a slide's shapes are read in z-order but rewritten
+into a table, so it reports 30% loss on a section that lost nothing. Ask instead: does each source
+paragraph appear _somewhere_ in the output?
+
+```python
+sq = lambda s: re.sub(r'[^a-z0-9]', '', html.unescape(s).lower())
+haystack = sq(article_markdown)
+missing = [p for p in source_paragraphs
+           if len(sq(p)) >= 4 and sq(p) not in haystack and not in_any_figure(sq(p))]
+```
+
+Three things that make the difference between a check that works and one that lies:
+
+- **Search the figures too.** Text that moved into an SVG has not been lost. Read every `<tspan>`
+  in each referenced figure and search that as well, or every diagram will read as a total loss.
+- **`html.unescape` before squashing.** SVG stores `&` as `&amp;`, so squashing raw markup injects
+  `amp` into the middle of every label and "Finance & Corporate" stops matching itself. Eight
+  phantom losses in one run came from this alone.
+- **Expect to triage.** A check tuned quiet enough not to need triage is tuned quiet enough to
+  miss a handful of wrong characters at the end of a long paragraph, which is precisely where
+  invented text hides. Noise is the price; pay it.
+
+Every surviving difference then goes in the preface, named. "556 of the source's 557 paragraphs
+appear verbatim, and here is the one that does not" is a much stronger claim than silence.
+
+### A text-only check scores a dropped diagram as perfect
+
+The check above counts paragraphs, and a drawing has none — so a slide reproduced as a table can
+lose its entire picture and still verify at 100%. One slide's three text streams were faithfully
+tabulated while the whole architecture diagram beside them vanished, and nothing complained.
+
+Text fidelity and figure fidelity are separate questions. For the second, **render every figure and
+look at it.** Two cheap signals catch most of it before you spend attention:
+
+- **Byte size.** A 247 KB SVG that renders to a 1.4 KB PNG is blank. That is how one figure whose
+  viewBox had been blown out to 4,000× the slide canvas was caught.
+- **viewBox against the slide canvas.** PowerPoint 4:3 is 25400 × 19050 in 1/100 mm. Anything wildly
+  wider is off-canvas junk pulled in by crop-to-content; anything much smaller is a crop that ate
+  the drawing.
+
+And when deciding whether a slide is "mostly text", decide it from the **render**, not from the
+extracted strings. A slide can be a bullet list that reads like a diagram, or a diagram whose text
+reads like a list. Only looking tells you which.
+
 ## Finishing
 
 - Add the originals to wherever the project serves downloads, as a ZIP, and quote its real size in
@@ -185,6 +251,9 @@ deck. Where colours differ between sources, that difference is itself worth a se
 - Check the built page for overflow and contrast. **Point any audit at the right host and base
   path** — auditing one site's URLs against another's preview measures 404 pages, which pass every
   check while proving nothing.
+- **Run the verification above and quote its result.** Not "the article is faithful" but "n of the
+  source's m paragraphs appear verbatim, and the exceptions are these". If you cannot say the
+  number, the check has not been run.
 
 ## Reference
 

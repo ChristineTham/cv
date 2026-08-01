@@ -63,6 +63,11 @@ figures converted from the original PostScript rather than photographs of the pr
 Run the `content-fidelity-verifier` agent against the source. Then the usual sequence in both
 repositories, working in `cv` first.
 
+That agent checks **words**. It cannot see that a figure was dropped, because a drawing contributes
+no text to compare — a slide or plate reproduced as a table can lose its whole picture and still
+verify clean. Render every figure and look at it as a separate step; `legacy-office-source` has the
+detail, including the byte-size and viewBox signals that catch a blank or blown-out conversion.
+
 The source archive or scan goes in **`cv/public/` only** — it is a personal document and
 `spotlite` is a public template. The `spotlite` copy of the article carries the same prose with
 the download links removed. `sync-both` covers the mechanics.
