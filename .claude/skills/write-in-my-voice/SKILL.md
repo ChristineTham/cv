@@ -167,7 +167,8 @@ rather than the plan.
   what the piece is, in her voice rather than in marketing language.
 - A literal `$` must be escaped as `\$`, or the Markdown processor reads a paragraph's dollar
   amounts as an inline equation and silently blows the page width open.
-- Articles land in both `spotlite` and `cv`; see `sync-both`.
+- Write the article in `cv` first, then backport to `spotlite` without its download links; see
+  `sync-both`.
 
 ## Reference
 

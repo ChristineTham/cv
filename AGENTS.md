@@ -4,6 +4,8 @@ Spotlite generates a professional CV — two print-ready PDFs and a browsable si
 
 `README.md` documents the project for a human setting it up. This file is for coding agents: what the project is, how it is put together, and — in the Traps section — the specific things that have cost real debugging time. `DESIGN.md` covers the visual system.
 
+The same codebase is deployed twice, and **this brief lives in `cv` only.** The `spotlite` copy is the public template: it ships the site without the machinery for maintaining it, so it has no `AGENTS.md`, no `CLAUDE.md` and no `.claude/`. Everything below therefore describes `cv`. `CLAUDE.md` covers what the two repositories do not share and how a change reaches the other one.
+
 ## 🎯 What this project is
 
 Two audiences at once, and the tension between them explains most design decisions:
@@ -16,7 +18,7 @@ Tone is professional but not corporate-bland. All prose is **Australian English*
 ## 🛠 Tech Stack
 
 - **Package Manager:** [pnpm](https://pnpm.io/) — pinned via `packageManager`; never npm or yarn
-- **Framework:** [Astro](https://astro.build) 7, static output, `base: '/spotlite/'`, Content Layer API
+- **Framework:** [Astro](https://astro.build) 7, static output, `base: '/cv/'`, Content Layer API
 - **Styling:** [UnoCSS](https://unocss.dev/) with Wind4, Typography, and Icons presets
 - **Fonts:** Astro's `fonts` integration via the fontsource provider (Noto Sans / Serif / Sans Mono)
 - **Type Safety:** [TypeScript](https://www.typescriptlang.org/), `astro/tsconfigs/strict`
@@ -315,7 +317,7 @@ Write the test first where you can, and add one whenever you fix a bug a test co
 
 ## 🚢 Deployment
 
-Deployed to **GitHub Pages** via `.github/workflows/deploy.yml` (`withastro/action`) on every push to `main`. Static output served from the `/spotlite/` base path.
+Deployed to **GitHub Pages** via `.github/workflows/deploy.yml` (`withastro/action`) on every push to `main`. Static output served from the `/cv/` base path.
 
 **The repository is public.** Anything committed is published, including git history — do not commit personal data.
 

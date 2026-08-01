@@ -13,7 +13,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-REPOS = ('spotlite', 'cv')
+REPOS = ('cv', 'spotlite')   # primary first
 ROOT = Path.home() / 'Repositories' / 'Websites'
 
 

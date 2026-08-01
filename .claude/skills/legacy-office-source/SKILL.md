@@ -178,10 +178,10 @@ deck. Where colours differ between sources, that difference is itself worth a se
 ## Finishing
 
 - Add the originals to wherever the project serves downloads, as a ZIP, and quote its real size in
-  the link text rather than guessing.
-- If the project is deployed from more than one repository, port assets and archives to each —
-  new `.svg` files, the archive, and the removal of any `.gif` they supersede. This project has
-  `sync-both` for that.
+  the link text rather than guessing. In this project that is `cv/public/` and never
+  `spotlite/public/`; the originals are personal documents and `spotlite` is a public template.
+- Work in `cv` first, then backport to `spotlite`. Figures and article prose go to both; the
+  archive and the download links pointing at it stay in `cv`. `sync-both` covers the mechanics.
 - Check the built page for overflow and contrast. **Point any audit at the right host and base
   path** — auditing one site's URLs against another's preview measures 404 pages, which pass every
   check while proving nothing.

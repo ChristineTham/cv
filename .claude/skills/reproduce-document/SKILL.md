@@ -61,8 +61,11 @@ figures converted from the original PostScript rather than photographs of the pr
 ## Before finishing
 
 Run the `content-fidelity-verifier` agent against the source. Then the usual sequence in both
-repositories, and add the source archive or scan to `public/` in both so the download works
-from either site.
+repositories, working in `cv` first.
+
+The source archive or scan goes in **`cv/public/` only** — it is a personal document and
+`spotlite` is a public template. The `spotlite` copy of the article carries the same prose with
+the download links removed. `sync-both` covers the mechanics.
 
 Finally, link the article from `src/content/page/education.md` if it is a published paper or
 thesis — the existing entries link the reproduction and its scan side by side.

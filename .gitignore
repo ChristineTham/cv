@@ -29,3 +29,7 @@ coverage/
 # Working CV drafts, kept locally only. Anchored to the repo root so this cannot match
 # public/*.pdf — a bare *.pdf would silently stop the published downloads being tracked.
 /*.pdf
+
+# Byte-cache left behind whenever the .claude/ hooks or skill scripts are imported or
+# syntax-checked. cv-only, because spotlite ships no Python.
+__pycache__/

@@ -11,17 +11,25 @@ anything. `DESIGN.md` covers the Rosely visual system; `README.md` documents set
 
 This file holds only what those three do not, and should stay short so it does not drift from them.
 
-## This repo is one of two copies
+## This repo is the primary of two copies
 
 The same site is deployed twice from two **separate repositories with no shared history and no
 merge path**:
 
-|          | repo                                              | `site`                  | `base`       |
-| :------- | :------------------------------------------------ | :---------------------- | :----------- |
-| template | `hellotham/spotlite`                              | `https://hellotham.com` | `/spotlite/` |
-| personal | `ChristineTham/cv` (`~/Repositories/Websites/cv`) | `https://christham.net` | `/cv/`       |
+|                       | repo                                              | `site`                  | `base`       |
+| :-------------------- | :------------------------------------------------ | :---------------------- | :----------- |
+| **primary**, personal | `ChristineTham/cv` (`~/Repositories/Websites/cv`) | `https://christham.net` | `/cv/`       |
+| alternate, template   | `hellotham/spotlite`                              | `https://hellotham.com` | `/spotlite/` |
 
-**Every content or code change lands in both, in the same turn**, or they silently diverge.
+**Work in `cv` first. Get the change right here, then backport it to `spotlite`.** The backport
+drops the personal archive and the download links that point at it, and nothing else. Both must
+land in the same turn or they silently diverge.
+
+The direction matters because the difference between the two is a subtraction. Working in `cv`
+you have the manuscripts and scans to hand and can check a reproduction against its source; the
+`spotlite` copy is that same article with the download lines removed. Starting in `spotlite`
+means writing an article you cannot verify, then bolting on links to files you never opened.
+
 Verify with a base-normalised diff rather than by eye:
 
 ```bash
@@ -35,20 +43,41 @@ Two ways this has gone wrong:
   link opener instead: `s#](/spotlite/#](/cv/#g`.
 - **Copying config wholesale.** `astro.config.mjs` differs in `site` and `base`, and the two repos
   word some comments differently. Port the specific lines, not the file.
+- **Believing the normalised diff too readily.** Both base strings are also real paths in the
+  site: `cv` is a page route and `spotlite` is an article slug. So `/cv/` inside a sentence about
+  the CV route normalises on one side and not the other, and a file that names _both_ base paths
+  deliberately — this one does — comes out looking hopelessly drifted. When a normalised diff
+  flags something, read the hunks before believing them. `README.md` is expected to differ: it is
+  a personal note here and the template's front page there.
+- **Combining the two substitutions into one alternation.** macOS ships BSD `sed`, where `\|` is
+  not alternation in a basic regular expression — it matches a literal `|`. So
+  `s#/\(cv\|spotlite\)/#/BASE/#g` silently normalises **nothing**, exits 0, and reports every
+  cross-linked article as drifted. Keep one plain substitution per side as written above, or do
+  the comparison in Python against the hook's own `normalise()`, which is the authority.
 
 Both deploy to GitHub Pages on push to `main`. Wait for the run and check the SHA matches — and
 note that a `cd` earlier in a compound command persists, so a `git push` labelled "spotlite" can
 easily push `cv` twice. Confirm with `git log origin/main..HEAD` per repo.
 
-### Original documents are kept in `cv` only
+### Two things are kept in `cv` only
 
-The one place the two diverge on purpose. `cv` is a personal CV; `spotlite` is a public template
-and has no business shipping a personal archive. So **every original historical document — Word
-manuscripts, conference decks, scans, and the contemporaneous HTML exports — is committed to
-`cv/public/` and never to `spotlite/public/`.** `spotlite/public/` holds site chrome and the
-generated CV PDFs, nothing else.
+The two places they diverge on purpose. `spotlite` is a public template: it ships the site, and
+nothing else.
 
-The articles reproducing those documents stay in **both**. In `spotlite` they simply carry no
+**The archive.** `cv` is a personal CV and `spotlite` has no business carrying a personal one, so
+**every original historical document — Word manuscripts, conference decks, scans, and the
+contemporaneous HTML exports — is committed to `cv/public/` and never to `spotlite/public/`.**
+`spotlite/public/` holds site chrome and the generated CV PDFs, nothing else.
+
+**The tooling.** `.claude/`, `AGENTS.md` and this file exist in `cv` alone. They describe a
+two-repo workflow that only makes sense from the primary side, and much of what they say is about
+an archive `spotlite` does not have. A template that shipped them would be handing every forker a
+hook that refuses their files and a skill that syncs to a repository they do not own.
+
+So a backport carries **content and code**, and never the tooling. There is nothing to keep in
+sync here: edit the `cv` copy and stop.
+
+The articles reproducing archived documents stay in **both**. In `spotlite` they simply carry no
 download link: the standalone `**[Download …]**` lines are dropped, and where a link sat inside a
 sentence the sentence keeps its words and loses the link. So these differ by design, and a
 base-normalised diff of them is _expected_ to show the download lines and nothing else:
@@ -56,11 +85,33 @@ base-normalised diff of them is _expected_ to show the download lines and nothin
 - `src/content/article/{auug-1993,auug-1994,openworld-1994,crypt-usenix91,suntech-1990}.md`
 - `src/content/page/education.md`
 
-`.claude/hooks/check-sibling-repo.py` holds both lists. It **refuses** a historical document
-written under `spotlite/`, and **downgrades to a warning** on the six files above — which does
-mean an unrelated drift in one of them is no longer caught, so diff them by hand when you touch
-them for another reason. It also exempts `public/site.webmanifest` and the two generated CV PDFs,
-which are each repo's own identity, and it normalises the **host** as well as the base path.
+`.claude/hooks/check-sibling-repo.py` holds all three lists. It **refuses** a historical document
+or a tooling file written under `spotlite/`, and **downgrades to a warning** on the six files
+above — which does mean an unrelated drift in one of them is no longer caught, so diff them by
+hand when you touch them for another reason. It also exempts `public/site.webmanifest` and the two
+generated CV PDFs, which are each repo's own identity, and it normalises the **host** as well as
+the base path.
+
+**It cannot fire in a session rooted at `spotlite`,** because a hook runs from
+`$CLAUDE_PROJECT_DIR` and there is no `.claude/` there any more. Nothing stops a session started
+in `spotlite` from editing it directly and diverging in silence. Start in `cv`.
+
+**Nor can it fire in a session _forked_ from one rooted elsewhere.** Hooks, skills and agents are
+read once at session start, so a fork keeps whatever registry it inherited even after the working
+directory changes. The symptom is quiet: `.claude/` is present on disk and complete, but no hook
+fires, the project skills are missing from the skill list, and the two agents report as
+unavailable. Only a genuine restart in `cv` fixes it — and until then nothing is enforcing any of
+this.
+
+To test rather than guess, write a file the hook must **refuse** and see whether it is blocked:
+
+```bash
+# from a cv-rooted session — expect a refusal, then delete it
+echo probe > ~/Repositories/Websites/spotlite/public/hook-probe.DOC
+```
+
+Do not use `CLAUDE_PROJECT_DIR` as the tell. It is exported to the hook process, not to the Bash
+tool's shell, so it reads as unset there whether the hooks are live or not.
 
 ## Markdown extensions live in `src/utils/*-mdast.ts`
 
