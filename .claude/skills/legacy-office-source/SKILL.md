@@ -198,7 +198,22 @@ finding the same loss, which locates the fault in the import rather than the SVG
 - **Text is re-wrapped to LibreOffice's metrics**, sometimes breaking a word mid-way. The wrap is
   baked into two positioned tspans, so it needs the text element rebuilt by hand.
 
-Name both repairs in the preface. Whatever raster you are replacing is the authority for layout,
+**The SVG writer and the PDF renderer have faults of their own.** A 97-era deck imports through
+LibreOffice's own filter, which does carry rotation — and there the writer prints a rotated
+label's second line on top of its first, while the import condenses labels with a `textLength`
+that a browser sets cleanly and LibreOffice's own PDF renderer smears into illegibility. So
+export PDF alongside SVG and read the disagreements diagnostically: a defect in both is the
+import's, a defect the PDF does not share is the writer's, and a label only the PDF mangles may
+need no repair at all — check it in a browser before re-authoring anything. `figfix.mjs`
+finishes an extracted figure: the closed-form overprint repair, furniture drops that also sweep
+the orphaned bullet glyphs a dropped list leaves behind, and a re-crop. The tells and the
+formula are in `references/wmf-traps.md`:
+
+```bash
+node "$SKILL/scripts/figfix.mjs" fig-raw.svg figure-1.svg --drop "slide title" --fix-rotated
+```
+
+Name every repair in the preface. Whatever raster you are replacing is the authority for layout,
 even when it is the thing being superseded.
 
 ## Which source is right

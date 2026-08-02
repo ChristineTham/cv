@@ -1,8 +1,9 @@
 # Traps in metafile and LibreOffice conversion
 
 Read this when a converted figure comes out _nearly_ right. Every entry below is something that
-happened while converting a real PowerPoint 4.0 deck, and each produced a picture that looked reasonable
-enough to ship while being wrong. None of them raised an error.
+happened while converting real PowerPoint decks, and each produced a picture that looked
+reasonable enough to ship while being wrong — or, in one case, looked destroyed while being
+right. None of them raised an error.
 
 ## Contents
 
@@ -143,6 +144,45 @@ import rather than the SVG writer — so no choice of output format avoids it.
 
 Words break mid-way where the original fitted on one line. The wrap is baked in as two
 positioned tspans, so it cannot be undone by styling; rebuild the text element.
+
+### The writer overprints rotated two-line labels
+
+A 97-era binary deck imports through LibreOffice's own filter rather than libmwaw, and its text
+rotation arrives intact — the fault moves downstream, into the SVG writer. For a text shape
+rotated -90 the writer emits the first TextPosition tspan correctly, its anchor equal to the
+`rotate()` centre, and every later tspan at its final **page** coordinates while leaving it
+inside the rotated frame. The browser rotates an already-rotated position and the lines print on
+top of each other; eight label pairs on one slide arrived this way. LibreOffice's own PDF export
+renders the same labels correctly, which is what locates the fault in the writer — and makes the
+PDF the layout authority for the repair.
+
+The tell is exact: the second-line tspans of sibling labels all share one y value — four labels
+in one band of boxes carried y="7684" apiece — and their coordinates match the page positions in
+the PDF render. The repair is closed-form, no eyeballing: for `rotate(-90 cx cy)`, replace each
+later tspan's stored (px, py) with (cx + cy - py, cy + px - cx), the inverse rotation about the
+transform's own centre, after which the forward transform lands each line exactly where the PDF
+puts it. `scripts/figfix.mjs --fix-rotated` applies it to every rotated text element in the
+figure.
+
+### `textLength` condensation is a smear in the PDF and clean type in a browser
+
+The import stamps labels with `lengthAdjust="spacingAndGlyphs"` and a `textLength` equal to the
+original text box's width. Where that is narrower than the text's natural width, LibreOffice's
+own PDF renderer overprints the glyphs into an unreadable smear — but a browser honours the
+attribute and sets clean condensed type. One slide's labels were condensed to as little as
+three-fifths of natural width: destroyed in the PDF, perfectly legible in the shipped SVG, and
+needing no repair at all. Look at the figure in a browser before re-authoring a label the PDF
+ruins. The PDF export settles where things sit, never how text renders.
+
+### A drawing imported twice over is harmless; deduplicating it is not
+
+Some drawings arrive drawn twice, every element repeated at its identical position — one slide's
+pyramid carried 54 of its 55 paths and 36 of its 37 text elements as pairwise-identical copies.
+The overlay is pixel-identical, so it costs bytes and nothing else. The obvious cleanup, removing
+elements whose serialised markup repeats, broke the figure instead: the two copies' clipPath
+children serialise identically while being distinct objects, so the dedupe emptied the second
+copy's clipPath, and an empty clipPath clips its group to nothing. Leave doubled drawings in
+place.
 
 ### Modern PowerPoint fails silently on PowerPoint 4.0
 
