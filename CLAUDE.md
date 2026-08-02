@@ -4,31 +4,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Read these first
 
-`AGENTS.md` is the authoritative agent brief: what the project is, the full command table, the
-content model, the CV pipeline, and a long **Traps** section where each entry is a real debugging
-session. **It is not loaded automatically** — only this file is — so read it before changing
-anything. `DESIGN.md` covers the Rosely visual system; `README.md` documents setup for a human.
+`AGENTS.md` is the authoritative agent brief: what the project is, the full command table, the content model, the CV pipeline, and a long **Traps** section where each entry is a real debugging session. **It is not loaded automatically** — only this file is — so read it before changing anything. `DESIGN.md` covers the Rosely visual system; `README.md` documents setup for a human.
 
 This file holds only what those three do not, and should stay short so it does not drift from them.
 
 ## This repo is the primary of two copies
 
-The same site is deployed twice from two **separate repositories with no shared history and no
-merge path**:
+The same site is deployed twice from two **separate repositories with no shared history and no merge path**:
 
-|                       | repo                                              | `site`                  | `base`       |
-| :-------------------- | :------------------------------------------------ | :---------------------- | :----------- |
-| **primary**, personal | `ChristineTham/cv` (`~/Repositories/Websites/cv`) | `https://christham.net` | `/cv/`       |
-| alternate, template   | `hellotham/spotlite`                              | `https://hellotham.com` | `/spotlite/` |
+|  | repo | `site` | `base` |
+| :-- | :-- | :-- | :-- |
+| **primary**, personal | `ChristineTham/cv` (`~/Repositories/Websites/cv`) | `https://christham.net` | `/cv/` |
+| alternate, template | `hellotham/spotlite` | `https://hellotham.com` | `/spotlite/` |
 
-**Work in `cv` first. Get the change right here, then backport it to `spotlite`.** The backport
-drops the personal archive and the download links that point at it, and nothing else. Both must
-land in the same turn or they silently diverge.
+**Work in `cv` first. Get the change right here, then backport it to `spotlite`.** The backport drops the personal archive and the download links that point at it, and nothing else. Both must land in the same turn or they silently diverge.
 
-The direction matters because the difference between the two is a subtraction. Working in `cv`
-you have the manuscripts and scans to hand and can check a reproduction against its source; the
-`spotlite` copy is that same article with the download lines removed. Starting in `spotlite`
-means writing an article you cannot verify, then bolting on links to files you never opened.
+The direction matters because the difference between the two is a subtraction. Working in `cv` you have the manuscripts and scans to hand and can check a reproduction against its source; the `spotlite` copy is that same article with the download lines removed. Starting in `spotlite` means writing an article you cannot verify, then bolting on links to files you never opened.
 
 Verify with a base-normalised diff rather than by eye:
 
@@ -38,82 +29,37 @@ diff <(sed 's#/spotlite/#/BASE/#g' spotlite/src/content/article/x.md) <(sed 's#/
 
 Two ways this has gone wrong:
 
-- **Rewriting the base path.** `spotlite` is also an article slug, so a blanket
-  `s#/spotlite/#/cv/#g` turns `/spotlite/article/spotlite/` into `/cv/article/cv/`. Anchor on the
-  link opener instead: `s#](/spotlite/#](/cv/#g`.
-- **Copying config wholesale.** `astro.config.mjs` differs in `site` and `base`, and the two repos
-  word some comments differently. Port the specific lines, not the file.
-- **Believing the normalised diff too readily.** Both base strings are also real paths in the
-  site: `cv` is a page route and `spotlite` is an article slug. So `/cv/` inside a sentence about
-  the CV route normalises on one side and not the other, and a file that names _both_ base paths
-  deliberately — this one does — comes out looking hopelessly drifted. When a normalised diff
-  flags something, read the hunks before believing them. `README.md` is expected to differ: it is
-  a personal note here and the template's front page there.
-- **Combining the two substitutions into one alternation.** macOS ships BSD `sed`, where `\|` is
-  not alternation in a basic regular expression — it matches a literal `|`. So
-  `s#/\(cv\|spotlite\)/#/BASE/#g` silently normalises **nothing**, exits 0, and reports every
-  cross-linked article as drifted. Keep one plain substitution per side as written above, or do
-  the comparison in Python against the hook's own `normalise()`, which is the authority.
+- **Rewriting the base path.** `spotlite` is also an article slug, so a blanket `s#/spotlite/#/cv/#g` turns `/spotlite/article/spotlite/` into `/cv/article/cv/`. Anchor on the link opener instead: `s#](/spotlite/#](/cv/#g`.
+- **Copying config wholesale.** `astro.config.mjs` differs in `site` and `base`, and the two repos word some comments differently. Port the specific lines, not the file.
+- **Believing the normalised diff too readily.** Both base strings are also real paths in the site: `cv` is a page route and `spotlite` is an article slug. So `/cv/` inside a sentence about the CV route normalises on one side and not the other, and a file that names _both_ base paths deliberately — this one does — comes out looking hopelessly drifted. When a normalised diff flags something, read the hunks before believing them. `README.md` is expected to differ: it is a personal note here and the template's front page there.
+- **Combining the two substitutions into one alternation.** macOS ships BSD `sed`, where `\|` is not alternation in a basic regular expression — it matches a literal `|`. So `s#/\(cv\|spotlite\)/#/BASE/#g` silently normalises **nothing**, exits 0, and reports every cross-linked article as drifted. Keep one plain substitution per side as written above, or do the comparison in Python against the hook's own `normalise()`, which is the authority.
 
-Both deploy to GitHub Pages on push to `main`. Wait for the run and check the SHA matches — and
-note that a `cd` earlier in a compound command persists, so a `git push` labelled "spotlite" can
-easily push `cv` twice. Confirm with `git log origin/main..HEAD` per repo.
+Both deploy to GitHub Pages on push to `main`. Wait for the run and check the SHA matches — and note that a `cd` earlier in a compound command persists, so a `git push` labelled "spotlite" can easily push `cv` twice. Confirm with `git log origin/main..HEAD` per repo.
 
-**`/sync-both` performs all of this** — the backport, both check suites, a primary-first commit and
-push using `git -C`, and the per-repo deploy confirmation. It carries
-`disable-model-invocation: true`, so it never appears in an assistant's own skill list and has to be
-asked for by name. Suggest it rather than reproducing its steps by hand: hand-running them is where
-both the `cd` leak and the unverified deploy come from.
+**`/sync-both` performs all of this** — the backport, both check suites, a primary-first commit and push using `git -C`, and the per-repo deploy confirmation. It carries `disable-model-invocation: true`, so it never appears in an assistant's own skill list and has to be asked for by name. Suggest it rather than reproducing its steps by hand: hand-running them is where both the `cd` leak and the unverified deploy come from.
 
 ### Two things are kept in `cv` only
 
-The two places they diverge on purpose. `spotlite` is a public template: it ships the site, and
-nothing else.
+The two places they diverge on purpose. `spotlite` is a public template: it ships the site, and nothing else.
 
-**The archive.** `cv` is a personal CV and `spotlite` has no business carrying a personal one, so
-**every original historical document — Word manuscripts, conference decks and scans — is committed
-to `cv/public/` and never to `spotlite/public/`.** `spotlite/public/` holds site chrome and the
-generated CV PDFs, nothing else.
+**The archive.** `cv` is a personal CV and `spotlite` has no business carrying a personal one, so **every original historical document — Word manuscripts, conference decks and scans — is committed to `cv/public/` and never to `spotlite/public/`.** `spotlite/public/` holds site chrome and the generated CV PDFs, nothing else.
 
-Each original is served **as its own file, never bundled into a ZIP**: a zip hides its contents,
-needs unpacking before anyone can look, and duplicates bytes already committed alongside it. And
-the archive is the **sources**, not what was made from them — the contemporaneous HTML exports are
-worth extracting and diffing against the manuscript, but the finding goes in the article's preface
-and the export does not go in `public/`.
+Each original is served **as its own file, never bundled into a ZIP**: a zip hides its contents, needs unpacking before anyone can look, and duplicates bytes already committed alongside it. And the archive is the **sources**, not what was made from them — the contemporaneous HTML exports are worth extracting and diffing against the manuscript, but the finding goes in the article's preface and the export does not go in `public/`.
 
-**The tooling.** `.claude/`, `AGENTS.md` and this file exist in `cv` alone. They describe a
-two-repo workflow that only makes sense from the primary side, and much of what they say is about
-an archive `spotlite` does not have. A template that shipped them would be handing every forker a
-hook that refuses their files and a skill that syncs to a repository they do not own.
+**The tooling.** `.claude/`, `AGENTS.md` and this file exist in `cv` alone. They describe a two-repo workflow that only makes sense from the primary side, and much of what they say is about an archive `spotlite` does not have. A template that shipped them would be handing every forker a hook that refuses their files and a skill that syncs to a repository they do not own.
 
-So a backport carries **content and code**, and never the tooling. There is nothing to keep in
-sync here: edit the `cv` copy and stop.
+So a backport carries **content and code**, and never the tooling. There is nothing to keep in sync here: edit the `cv` copy and stop.
 
-The articles reproducing archived documents stay in **both**. In `spotlite` they simply carry no
-download link: the standalone `**[Download …]**` lines are dropped, and where a link sat inside a
-sentence the sentence keeps its words and loses the link. So these differ by design, and a
-base-normalised diff of them is _expected_ to show the download lines and nothing else:
+The articles reproducing archived documents stay in **both**. In `spotlite` they simply carry no download link: the standalone `**[Download …]**` lines are dropped, and where a link sat inside a sentence the sentence keeps its words and loses the link. So these differ by design, and a base-normalised diff of them is _expected_ to show the download lines and nothing else:
 
 - `src/content/article/{auug-1993,auug-1994,openworld-1994,crypt-usenix91,suntech-1990,banktech-2006}.md`
 - `src/content/page/education.md`
 
-`.claude/hooks/check-sibling-repo.py` holds all three lists. It **refuses** a historical document
-or a tooling file written under `spotlite/`, and **downgrades to a warning** on the six files
-above — which does mean an unrelated drift in one of them is no longer caught, so diff them by
-hand when you touch them for another reason. It also exempts `public/site.webmanifest` and the two
-generated CV PDFs, which are each repo's own identity, and it normalises the **host** as well as
-the base path.
+`.claude/hooks/check-sibling-repo.py` holds all three lists. It **refuses** a historical document or a tooling file written under `spotlite/`, and **downgrades to a warning** on the six files above — which does mean an unrelated drift in one of them is no longer caught, so diff them by hand when you touch them for another reason. It also exempts `public/site.webmanifest` and the two generated CV PDFs, which are each repo's own identity, and it normalises the **host** as well as the base path.
 
-**It cannot fire in a session rooted at `spotlite`,** because a hook runs from
-`$CLAUDE_PROJECT_DIR` and there is no `.claude/` there any more. Nothing stops a session started
-in `spotlite` from editing it directly and diverging in silence. Start in `cv`.
+**It cannot fire in a session rooted at `spotlite`,** because a hook runs from `$CLAUDE_PROJECT_DIR` and there is no `.claude/` there any more. Nothing stops a session started in `spotlite` from editing it directly and diverging in silence. Start in `cv`.
 
-**Nor can it fire in a session _forked_ from one rooted elsewhere.** Hooks, skills and agents are
-read once at session start, so a fork keeps whatever registry it inherited even after the working
-directory changes. The symptom is quiet: `.claude/` is present on disk and complete, but no hook
-fires, the project skills are missing from the skill list, and the two agents report as
-unavailable. Only a genuine restart in `cv` fixes it — and until then nothing is enforcing any of
-this.
+**Nor can it fire in a session _forked_ from one rooted elsewhere.** Hooks, skills and agents are read once at session start, so a fork keeps whatever registry it inherited even after the working directory changes. The symptom is quiet: `.claude/` is present on disk and complete, but no hook fires, the project skills are missing from the skill list, and the two agents report as unavailable. Only a genuine restart in `cv` fixes it — and until then nothing is enforcing any of this.
 
 To test rather than guess, write a file the hook must **refuse** and see whether it is blocked:
 
@@ -122,47 +68,28 @@ To test rather than guess, write a file the hook must **refuse** and see whether
 echo probe > ~/Repositories/Websites/spotlite/public/hook-probe.DOC
 ```
 
-Do not use `CLAUDE_PROJECT_DIR` as the tell. It is exported to the hook process, not to the Bash
-tool's shell, so it reads as unset there whether the hooks are live or not.
+Do not use `CLAUDE_PROJECT_DIR` as the tell. It is exported to the hook process, not to the Bash tool's shell, so it reads as unset there whether the hooks are live or not.
 
 ## Markdown extensions live in `src/utils/*-mdast.ts`
 
-Astro 7's Sätteri processor is configured in `astro.config.mjs` with
-`mdastPlugins: [katexPlugin(), alertPlugin()]`. These are Sätteri visitors, **not** remark/rehype —
-a unified plugin passed there is accepted and never runs. AGENTS.md explains why.
+Astro 7's Sätteri processor is configured in `astro.config.mjs` with `mdastPlugins: [katexPlugin(), alertPlugin()]`. These are Sätteri visitors, **not** remark/rehype — a unified plugin passed there is accepted and never runs. AGENTS.md explains why.
 
 - `katex-mdast.ts` typesets `$…$` at the mdast phase.
-- `alert-mdast.ts` renders GFM alerts (`> [!NOTE]`) as callouts, plus a non-GitHub `SYNTAX` kind for
-  language reference material. It renames the blockquote on the way to hast, so the body keeps
-  normal Markdown. Styling is `src/styles/alert.css`; the five-plus-one markers are allowlisted in
-  `eslint.config.mjs` under `markdown/no-missing-label-refs`.
+- `alert-mdast.ts` renders GFM alerts (`> [!NOTE]`) as callouts, plus a non-GitHub `SYNTAX` kind for language reference material. It renames the blockquote on the way to hast, so the body keeps normal Markdown. Styling is `src/styles/alert.css`; the five-plus-one markers are allowlisted in `eslint.config.mjs` under `markdown/no-missing-label-refs`.
 
-**`$` in prose is maths.** Currency in body text has to be escaped as `\$` or a paragraph's dollar
-amounts pair into an inline equation, which blows the page width open with no build error.
+**`$` in prose is maths.** Currency in body text has to be escaped as `\$` or a paragraph's dollar amounts pair into an inline equation, which blows the page width open with no build error.
 
 ## Reproduced historical documents
 
-Several articles reproduce a published paper or thesis (`crypt-usenix91`, `suntech-1990`,
-`optech-1990`, `rubato`). The house pattern: an italic preface stating what the source was and what
-was changed, a link to the original in `public/`, and the document's own References or Bibliography
-kept as it stood. A Sources section may sit alongside for provenance the original had no reason to
-carry — `crypt-usenix91` has both — but never replaces it.
+Several articles reproduce a published paper or thesis (`crypt-usenix91`, `suntech-1990`, `optech-1990`, `rubato`). The house pattern: an italic preface stating what the source was and what was changed, a link to the original in `public/`, and the document's own References or Bibliography kept as it stood. A Sources section may sit alongside for provenance the original had no reason to carry — `crypt-usenix91` has both — but never replaces it.
 
-Where the source is a scan or a lossy conversion, **state every repair in the preface** and keep
-them auditable — repair a named defect explicitly rather than inferring a general rule, unless the
-defect really is general.
+Where the source is a scan or a lossy conversion, **state every repair in the preface** and keep them auditable — repair a named defect explicitly rather than inferring a general rule, unless the defect really is general.
 
 ## Two traps that cost time in content work
 
-**A tag-stripping regex eats real angle brackets.** `<[^>]+>` run over text containing `a<b` … `a>b`
-matches from the first `<` to the next `>` and deletes everything between. This silently removed a
-row of relational operators from the Rubato thesis, and then bit the verification script written to
-check for exactly that kind of loss — three times. When processing content, strip a known tag list
-(`</?(?:a|em|strong|code|…)\b[^>]*>`), never a wildcard.
+**A tag-stripping regex eats real angle brackets.** `<[^>]+>` run over text containing `a<b` … `a>b` matches from the first `<` to the next `>` and deletes everything between. This silently removed a row of relational operators from the Rubato thesis, and then bit the verification script written to check for exactly that kind of loss — three times. When processing content, strip a known tag list (`</?(?:a|em|strong|code|…)\b[^>]*>`), never a wildcard.
 
-**Markdown `_` and `**` will not open or close against a letter, or across an underscore inside a
-word.** `_parameter_list_` and `_C_ompiler` both render literally. Emit `<em>`/`<strong>` in those
-positions instead.
+**Markdown `_` and `**` will not open or close against a letter, or across an underscore inside a word.** `_parameter_list_` and `_C_ompiler` both render literally. Emit `<em>`/`<strong>` in those positions instead.
 
 ## Before calling anything done
 
@@ -170,10 +97,6 @@ positions instead.
 pnpm lint && pnpm astro check && pnpm test && pnpm build
 ```
 
-`pnpm lint` **writes** — it is `prettier --write .` then `eslint --fix .`, not a check. It reformats
-anything not covered by `.prettierignore` or the eslint `ignores`, which is how a vendored 1998 HTML
-bundle in `public/` got silently reindented. Add new vendored or generated material to both ignore
-lists before running it.
+`pnpm lint` **writes** — it is `prettier --write .` then `eslint --fix .`, not a check. It reformats anything not covered by `.prettierignore` or the eslint `ignores`, which is how a vendored 1998 HTML bundle in `public/` got silently reindented. Add new vendored or generated material to both ignore lists before running it.
 
-Touching content, `src/cv.json` or `src/utils/cv.ts` also needs `pnpm run pdf` — the PDFs are
-committed and go stale silently. `pnpm build`, never bare `astro build`.
+Touching content, `src/cv.json` or `src/utils/cv.ts` also needs `pnpm run pdf` — the PDFs are committed and go stale silently. `pnpm build`, never bare `astro build`.

@@ -35,7 +35,6 @@ CORPUS = {
 # Phrases and constructions absent from the corpus and typical of machine-written prose. The
 # point is not that any one is forbidden, but that a draft carrying several is not in her voice.
 TELLS = [
-    (r'—', 'em dash (she uses a spaced en dash or hyphen, never this)'),
     (r"\bit'?s not just\b.{0,40}\bit'?s\b", '"it\'s not just X, it\'s Y"'),
     (r'\bnot only\b.{0,40}\bbut also\b', '"not only X but also Y"'),
     (r"\blet'?s dive in\b", '"let\'s dive in"'),

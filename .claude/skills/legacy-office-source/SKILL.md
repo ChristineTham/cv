@@ -5,15 +5,9 @@ description: Read a legacy Word .DOC or PowerPoint .PPT and turn it into a new a
 
 # Working from a Word manuscript or a PowerPoint deck
 
-A `.DOC` manuscript and its `.PPT` deck are better sources than the HTML that was exported from
-them years later. They predate the export, they carry figures as vector objects rather than
-480-pixel GIFs, and comparing one against its export routinely turns up something the export
-lost.
+A `.DOC` manuscript and its `.PPT` deck are better sources than the HTML that was exported from them years later. They predate the export, they carry figures as vector objects rather than 480-pixel GIFs, and comparing one against its export routinely turns up something the export lost.
 
-This skill covers getting text and figures out of those binaries. It says nothing about how the
-resulting article should be shaped — if the project has its own convention for reproductions
-(this one does: see `reproduce-document`), follow that for frontmatter, preface, repairs and
-provenance links.
+This skill covers getting text and figures out of those binaries. It says nothing about how the resulting article should be shaped — if the project has its own convention for reproductions (this one does: see `reproduce-document`), follow that for frontmatter, preface, repairs and provenance links.
 
 Paths below are written against three things worth settling up front:
 
@@ -28,86 +22,58 @@ SOFFICE=$(command -v soffice libreoffice 2>/dev/null | head -1)
 
 ## First work out what you are holding
 
-Spend a few minutes here. It changes everything downstream, and the cheapest mistake to make is
-publishing a second copy of something the project already has.
+Spend a few minutes here. It changes everything downstream, and the cheapest mistake to make is publishing a second copy of something the project already has.
 
 ```bash
 file "$SRC/paper.DOC" "$SRC/paper.PPT"
 ```
 
-`file` reports the OLE summary stream for PowerPoint, which is unusually informative: title,
-subject, author, revision count, creation and last-saved dates, slide count. Those dates settle
-questions the prose cannot — a deck last saved days before one conference and revised for another
-establishes which version came first.
+`file` reports the OLE summary stream for PowerPoint, which is unusually informative: title, subject, author, revision count, creation and last-saved dates, slide count. Those dates settle questions the prose cannot — a deck last saved days before one conference and revised for another establishes which version came first.
 
-Then ask whether this is the source of something already published. Search the project's article
-or content directory for the title. If it is, the job is probably **not** a new article. It is
-more likely to be:
+Then ask whether this is the source of something already published. Search the project's article or content directory for the title. If it is, the job is probably **not** a new article. It is more likely to be:
 
 - correcting the published one where the export lost or mangled something, and
 - replacing its figures with vector versions.
 
-Say so plainly rather than producing a near-duplicate. When two published versions of the same
-paper genuinely exist — a conference version and a revision for a different audience — prefer
-publishing both, cross-linked, marking where they diverge, over silently consolidating them.
+Say so plainly rather than producing a near-duplicate. When two published versions of the same paper genuinely exist — a conference version and a revision for a different audience — prefer publishing both, cross-linked, marking where they diverge, over silently consolidating them.
 
 ## Extracting the text
 
-On macOS, `textutil` handles Word formats back to WinWord 2.0. LibreOffice does the same job on
-any platform and is worth reaching for when `textutil` is absent or produces nothing useful:
+On macOS, `textutil` handles Word formats back to WinWord 2.0. LibreOffice does the same job on any platform and is worth reaching for when `textutil` is absent or produces nothing useful:
 
 ```bash
 textutil -convert txt -output out.txt "$SRC/paper.DOC"
 "$SOFFICE" --headless --convert-to txt --outdir out/ "$SRC/paper.DOC"    # portable alternative
 ```
 
-Either way the result is a binary preamble, then the prose, then binary again. Find the title to
-locate the start, and a known closing phrase to locate the end.
+Either way the result is a binary preamble, then the prose, then binary again. Find the title to locate the start, and a known closing phrase to locate the end.
 
-**Word field codes survive the conversion, and they are evidence rather than noise.** Read them
-before stripping them:
+**Word field codes survive the conversion, and they are evidence rather than noise.** Read them before stripping them:
 
-| Field                    | What it tells you                                                                                                                                                       |
-| :----------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `AUTONUM` / `AUTONUMLGL` | Headings carry **no literal numbers**. Any numbers in a derived HTML were introduced by that conversion, so wrong ones there are conversion faults, not the author's.   |
-| `EMBED MSPowerPoint`     | This figure is an embedded PowerPoint object, so a vector copy exists — see below. A figure without this marker is a pasted picture and may have no vector form at all. |
-| `SYMBOL 183 \f "Symbol"` | A bullet character. Strip these or every list item gains a nonsense word.                                                                                               |
-| `METAFILEPICT`           | The OLE clipboard format name that precedes a cached metafile. Counting these tells you how many embedded objects to expect.                                            |
+| Field | What it tells you |
+| :-- | :-- |
+| `AUTONUM` / `AUTONUMLGL` | Headings carry **no literal numbers**. Any numbers in a derived HTML were introduced by that conversion, so wrong ones there are conversion faults, not the author's. |
+| `EMBED MSPowerPoint` | This figure is an embedded PowerPoint object, so a vector copy exists — see below. A figure without this marker is a pasted picture and may have no vector form at all. |
+| `SYMBOL 183 \f "Symbol"` | A bullet character. Strip these or every list item gains a nonsense word. |
+| `METAFILEPICT` | The OLE clipboard format name that precedes a cached metafile. Counting these tells you how many embedded objects to expect. |
 
-Word also justifies with discretionary hyphens, so extracted text is full of `pro cessing`,
-`dis tributed`, `com ple xi ty`. Do not try to repair these by rule; handle them in the
-comparison instead.
+Word also justifies with discretionary hyphens, so extracted text is full of `pro cessing`, `dis tributed`, `com ple xi ty`. Do not try to repair these by rule; handle them in the comparison instead.
 
 ### Never finish a truncated line from inference
 
-Dumps get written with a per-line cap — `[:150]`, `head -c`, a column limit in a table — to keep
-the survey readable. That is fine for surveying. It is **not** fine as the text you then quote
-from, and the failure is silent: a sentence cut at 150 characters still reads as a whole sentence,
-so the temptation is to complete it from context and move on.
+Dumps get written with a per-line cap — `[:150]`, `head -c`, a column limit in a table — to keep the survey readable. That is fine for surveying. It is **not** fine as the text you then quote from, and the failure is silent: a sentence cut at 150 characters still reads as a whole sentence, so the temptation is to complete it from context and move on.
 
-Two quotations in one article were invented exactly this way. A slide reading "ensuring programs
-implement agreed solutions" was cut at "…implement" and published as "implement them". Another
-reading "as well as Technology budget" was cut at "as well as T" and published as "Technology
-Strategy" — which also changed the claim, from an operating budget to a strategy programme.
+Two quotations in one article were invented exactly this way. A slide reading "ensuring programs implement agreed solutions" was cut at "…implement" and published as "implement them". Another reading "as well as Technology budget" was cut at "as well as T" and published as "Technology Strategy" — which also changed the claim, from an operating budget to a strategy programme.
 
-So: **survey with a cap, quote from an uncapped re-extraction.** If a dump was truncated, do not
-repair it, regenerate it. And treat any sentence that ends suspiciously near the cap as unread.
+So: **survey with a cap, quote from an uncapped re-extraction.** If a dump was truncated, do not repair it, regenerate it. And treat any sentence that ends suspiciously near the cap as unread.
 
 ### A flattened table reads as prose, and invents defects
 
-`textutil` renders a Word table as a flat run of lines delimited by `\x07`. That character is
-invisible in a terminal and survives most cleanup, so a two-column table of labels and values
-arrives looking like prose — and its cell boundaries look like the author's typos.
+`textutil` renders a Word table as a flat run of lines delimited by `\x07`. That character is invisible in a terminal and survives most cleanup, so a two-column table of labels and values arrives looking like prose — and its cell boundaries look like the author's typos.
 
-An APC review block came out of the dump as `PhoneEmail:  info@meedio.com`. That is a `Phone`
-label cell followed by a cell reading `Email: info@meedio.com`, which is only the author reusing
-a row rather than relabelling it. It was written into a preface as an authoring defect, next to a
-claim that the review blocks "are a flat run of labels and values in the Word file". Both were
-false: the file held four ordinary two-column tables, and the preface was describing an artefact
-of the converter as a fault in the source.
+An APC review block came out of the dump as `PhoneEmail:  info@meedio.com`. That is a `Phone` label cell followed by a cell reading `Email: info@meedio.com`, which is only the author reusing a row rather than relabelling it. It was written into a preface as an authoring defect, next to a claim that the review blocks "are a flat run of labels and values in the Word file". Both were false: the file held four ordinary two-column tables, and the preface was describing an artefact of the converter as a fault in the source.
 
-**`\x07` in a text dump means a table.** Convert to HTML and read the structure before describing
-it, because that conversion keeps the cells:
+**`\x07` in a text dump means a table.** Convert to HTML and read the structure before describing it, because that conversion keeps the cells:
 
 ```bash
 "$SOFFICE" --headless --norestore -env:UserInstallation=file:///tmp/loprofile \
@@ -115,69 +81,50 @@ it, because that conversion keeps the cells:
 grep -c '<table' out/paper.html
 ```
 
-The same mistake is available in the other direction. Reproducing a real table as prose loses a
-structure the author chose, so settle what the source actually is before deciding how to set it.
+The same mistake is available in the other direction. Reproducing a real table as prose loses a structure the author chose, so settle what the source actually is before deciding how to set it.
 
 ## Comparing the manuscript against an existing export
 
-This is where the value is. Squash **both** sides to lowercase alphanumerics with **no spaces at
-all**, then diff as a character stream:
+This is where the value is. Squash **both** sides to lowercase alphanumerics with **no spaces at all**, then diff as a character stream:
 
 ```python
 sq = lambda s: re.sub(r'[^a-z0-9]', '', s.lower())
 sm = difflib.SequenceMatcher(None, sq(doc), sq(html), autojunk=False)
 ```
 
-Removing spaces entirely is what makes this work: every soft-hyphen split collapses, and so does
-every difference in line wrapping and tag placement. Word-level diffing on one such pair reported
-94 differing regions, of which one was real. The character stream reported three, of which one
-was real: the HTML export had dropped a word from a list.
+Removing spaces entirely is what makes this work: every soft-hyphen split collapses, and so does every difference in line wrapping and tag placement. Word-level diffing on one such pair reported 94 differing regions, of which one was real. The character stream reported three, of which one was real: the HTML export had dropped a word from a list.
 
-Strip HTML with a **known tag list**, never `<[^>]+>` — a wildcard eats everything between a real
-`a<b` and a later `a>b`. Decode entities _after_ stripping, or a decoded `&lt;` becomes a tag
-opener for the strip to eat.
+Strip HTML with a **known tag list**, never `<[^>]+>` — a wildcard eats everything between a real `a<b` and a later `a>b`. Decode entities _after_ stripping, or a decoded `&lt;` becomes a tag opener for the strip to eat.
 
-Anything the comparison turns up belongs in the article's preface, especially when it corrects
-something that preface previously claimed.
+Anything the comparison turns up belongs in the article's preface, especially when it corrects something that preface previously claimed.
 
 ## Figures: two routes, and they are not equivalent
 
 ### Route A — metafiles cached in the .DOC (prefer this for a paper's figures)
 
-Word stored a Windows Metafile rendering of every embedded OLE object so it could draw the figure
-without launching the application that owned it. Those caches are vector, and they are _the
-figure as the paper printed it_.
+Word stored a Windows Metafile rendering of every embedded OLE object so it could draw the figure without launching the application that owned it. Those caches are vector, and they are _the figure as the paper printed it_.
 
 ```bash
 python3 "$SKILL/scripts/extract_wmf.py" "$SRC/paper.DOC" -o wmf/
 python3 "$SKILL/scripts/wmf2svg.py" wmf/paper-00.wmf "alt text" > figure-1.svg
 ```
 
-`extract_wmf.py` scans for the metafile header, validates the declared length and the terminating
-EOF record, deduplicates, and writes each one out. Caches normally appear twice — Word keeps a
-copy in the object stream and another inline — and the tool reports which are doubled, which is a
-useful signal that a picture really is an embedded object.
+`extract_wmf.py` scans for the metafile header, validates the declared length and the terminating EOF record, deduplicates, and writes each one out. Caches normally appear twice — Word keeps a copy in the object stream and another inline — and the tool reports which are doubled, which is a useful signal that a picture really is an embedded object.
 
-`wmf2svg.py` walks the GDI records. It has been tested against real papers, but the format has
-sharp edges that produce plausible, silently wrong pictures. If a converted figure looks _nearly_
-right, read `references/wmf-traps.md` before assuming the source is at fault.
+`wmf2svg.py` walks the GDI records. It has been tested against real papers, but the format has sharp edges that produce plausible, silently wrong pictures. If a converted figure looks _nearly_ right, read `references/wmf-traps.md` before assuming the source is at fault.
 
 ### Route B — LibreOffice, from the .PPT
 
-Modern PowerPoint **cannot open PowerPoint 4.0** and fails quietly: an AppleScript `open` returns
-with zero presentations rather than an error. LibreOffice can, because it bundles libmwaw, which
-covers PowerPoint Mac v1–v4 and Windows v2–v4 and 95.
+Modern PowerPoint **cannot open PowerPoint 4.0** and fails quietly: an AppleScript `open` returns with zero presentations rather than an error. LibreOffice can, because it bundles libmwaw, which covers PowerPoint Mac v1–v4 and Windows v2–v4 and 95.
 
 ```bash
 "$SOFFICE" --headless --norestore -env:UserInstallation=file:///tmp/loprofile \
   --convert-to svg --outdir out/ "$SRC/deck.PPT"
 ```
 
-The `-env:UserInstallation` flag matters: it keeps the conversion out of any running LibreOffice
-profile, so this works even with the application open.
+The `-env:UserInstallation` flag matters: it keeps the conversion out of any running LibreOffice profile, so this works even with the application open.
 
-That yields **one SVG holding every slide**, with a script for navigation. List the slides, then
-pull one out:
+That yields **one SVG holding every slide**, with a script for navigation. List the slides, then pull one out:
 
 ```bash
 node "$SKILL/scripts/slide2svg.mjs" out/deck.svg --list
@@ -185,61 +132,38 @@ node "$SKILL/scripts/slide2svg.mjs" out/deck.svg id24 figure-4.svg \
   --drop "slide title,first words of each bullet" --rotate "Security,Management"
 ```
 
-It extracts the slide, un-hides its ancestors, crops to content, and strips the other slides'
-definitions — worth doing on its own, since that step took one figure from 252 KB to 25 KB. The
-script needs `puppeteer` resolvable, so run it from a directory where that is installed, or point
-`NODE_PATH` at one.
+It extracts the slide, un-hides its ancestors, crops to content, and strips the other slides' definitions — worth doing on its own, since that step took one figure from 252 KB to 25 KB. The script needs `puppeteer` resolvable, so run it from a directory where that is installed, or point `NODE_PATH` at one.
 
-**libmwaw's import loses things.** Two seen so far, both confirmed by exporting PDF as well and
-finding the same loss, which locates the fault in the import rather than the SVG writer:
+**libmwaw's import loses things.** Two seen so far, both confirmed by exporting PDF as well and finding the same loss, which locates the fault in the import rather than the SVG writer:
 
-- **Text rotation is dropped.** Vertical labels arrive lying flat across the middle of a diagram.
-  `--rotate` puts named labels back upright.
-- **Text is re-wrapped to LibreOffice's metrics**, sometimes breaking a word mid-way. The wrap is
-  baked into two positioned tspans, so it needs the text element rebuilt by hand.
+- **Text rotation is dropped.** Vertical labels arrive lying flat across the middle of a diagram. `--rotate` puts named labels back upright.
+- **Text is re-wrapped to LibreOffice's metrics**, sometimes breaking a word mid-way. The wrap is baked into two positioned tspans, so it needs the text element rebuilt by hand.
 
-**The SVG writer and the PDF renderer have faults of their own.** A 97-era deck imports through
-LibreOffice's own filter, which does carry rotation — and there the writer prints a rotated
-label's second line on top of its first, while the import condenses labels with a `textLength`
-that a browser sets cleanly and LibreOffice's own PDF renderer smears into illegibility. So
-export PDF alongside SVG and read the disagreements diagnostically: a defect in both is the
-import's, a defect the PDF does not share is the writer's, and a label only the PDF mangles may
-need no repair at all — check it in a browser before re-authoring anything. `figfix.mjs`
-finishes an extracted figure: the closed-form overprint repair, furniture drops that also sweep
-the orphaned bullet glyphs a dropped list leaves behind, and a re-crop. The tells and the
-formula are in `references/wmf-traps.md`:
+**The SVG writer and the PDF renderer have faults of their own.** A 97-era deck imports through LibreOffice's own filter, which does carry rotation — and there the writer prints a rotated label's second line on top of its first, while the import condenses labels with a `textLength` that a browser sets cleanly and LibreOffice's own PDF renderer smears into illegibility. So export PDF alongside SVG and read the disagreements diagnostically: a defect in both is the import's, a defect the PDF does not share is the writer's, and a label only the PDF mangles may need no repair at all — check it in a browser before re-authoring anything. `figfix.mjs` finishes an extracted figure: the closed-form overprint repair, furniture drops that also sweep the orphaned bullet glyphs a dropped list leaves behind, and a re-crop. The tells and the formula are in `references/wmf-traps.md`:
 
 ```bash
 node "$SKILL/scripts/figfix.mjs" fig-raw.svg figure-1.svg --drop "slide title" --fix-rotated
 ```
 
-Name every repair in the preface. Whatever raster you are replacing is the authority for layout,
-even when it is the thing being superseded.
+Name every repair in the preface. Whatever raster you are replacing is the authority for layout, even when it is the thing being superseded.
 
 ## Which source is right
 
 The same diagram can exist in three forms, and they are not interchangeable:
 
-| Source                              | What it is                                                     |
-| :---------------------------------- | :------------------------------------------------------------- |
-| The slide in the `.PPT`             | The **talk**. Usually in the presentation template's colours.  |
-| The object embedded in the `.DOC`   | The **paper as submitted**, often recoloured for print.        |
+| Source | What it is |
+| :-- | :-- |
+| The slide in the `.PPT` | The **talk**. Usually in the presentation template's colours. |
+| The object embedded in the `.DOC` | The **paper as submitted**, often recoloured for print. |
 | A contemporaneous GIF or PNG export | A **later revision** again, sometimes recoloured a third time. |
 
-For an article reproducing a paper, the embedded object wins. Reach for the slide only when the
-figure is not an embedded object and has no cache — and say in the preface that it came from the
-deck. Where colours differ between sources, that difference is itself worth a sentence.
+For an article reproducing a paper, the embedded object wins. Reach for the slide only when the figure is not an embedded object and has no cache — and say in the preface that it came from the deck. Where colours differ between sources, that difference is itself worth a sentence.
 
 ## Verify the finished article against the source
 
-Do this **after the article is written**, not only while extracting. It is a different check from
-the one above: that one compares the source against an existing export, this one compares the
-source against the thing you just produced. Run it before calling the work done, every time.
+Do this **after the article is written**, not only while extracting. It is a different check from the one above: that one compares the source against an existing export, this one compares the source against the thing you just produced. Run it before calling the work done, every time.
 
-Compare **paragraph by paragraph**, not as one character stream. A stream diff punishes reordering
-— and reordering is exactly what happens when a slide's shapes are read in z-order but rewritten
-into a table, so it reports 30% loss on a section that lost nothing. Ask instead: does each source
-paragraph appear _somewhere_ in the output?
+Compare **paragraph by paragraph**, not as one character stream. A stream diff punishes reordering — and reordering is exactly what happens when a slide's shapes are read in z-order but rewritten into a table, so it reports 30% loss on a section that lost nothing. Ask instead: does each source paragraph appear _somewhere_ in the output?
 
 ```python
 sq = lambda s: re.sub(r'[^a-z0-9]', '', html.unescape(s).lower())
@@ -250,71 +174,35 @@ missing = [p for p in source_paragraphs
 
 Five things that make the difference between a check that works and one that lies:
 
-- **Search the figures too.** Text that moved into an SVG has not been lost. Read every `<tspan>`
-  in each referenced figure and search that as well, or every diagram will read as a total loss.
-- **`html.unescape` before squashing.** SVG stores `&` as `&amp;`, so squashing raw markup injects
-  `amp` into the middle of every label and "Finance & Corporate" stops matching itself. Eight
-  phantom losses in one run came from this alone.
-- **Take table cells as units, not whole tables.** A table you have re-set in Markdown will not
-  match as one string, because the labels and values interleave differently — four review blocks
-  reported as total losses on a reproduction that had lost nothing in them. Feed each cell in
-  separately, from the HTML conversion above.
-- **The `>= 4` above skips short values silently.** `sq('2.5')` is two characters, so a verdict, a
-  price of "Free", a phone of "N/A" and every other short cell is never checked at all. Blanking a
-  `2.5` in a finished article scored a clean pass. Keep the threshold for prose, then check the
-  short cells separately, each inside its own section rather than against the whole file.
-- **Expect to triage.** A check tuned quiet enough not to need triage is tuned quiet enough to
-  miss a handful of wrong characters at the end of a long paragraph, which is precisely where
-  invented text hides. Noise is the price; pay it.
+- **Search the figures too.** Text that moved into an SVG has not been lost. Read every `<tspan>` in each referenced figure and search that as well, or every diagram will read as a total loss.
+- **`html.unescape` before squashing.** SVG stores `&` as `&amp;`, so squashing raw markup injects `amp` into the middle of every label and "Finance & Corporate" stops matching itself. Eight phantom losses in one run came from this alone.
+- **Take table cells as units, not whole tables.** A table you have re-set in Markdown will not match as one string, because the labels and values interleave differently — four review blocks reported as total losses on a reproduction that had lost nothing in them. Feed each cell in separately, from the HTML conversion above.
+- **The `>= 4` above skips short values silently.** `sq('2.5')` is two characters, so a verdict, a price of "Free", a phone of "N/A" and every other short cell is never checked at all. Blanking a `2.5` in a finished article scored a clean pass. Keep the threshold for prose, then check the short cells separately, each inside its own section rather than against the whole file.
+- **Expect to triage.** A check tuned quiet enough not to need triage is tuned quiet enough to miss a handful of wrong characters at the end of a long paragraph, which is precisely where invented text hides. Noise is the price; pay it.
 
-And **prove the check can fail before believing it passes.** A clean result on the first run is
-as likely to mean a broken check as a faithful article. Injecting five faults into a finished
-reproduction — a dropped sentence, one changed word, a truncated paragraph, a deleted list item,
-a blanked table cell — caught four and missed the fifth, which is how the threshold above was
-found. It costs one run.
+And **prove the check can fail before believing it passes.** A clean result on the first run is as likely to mean a broken check as a faithful article. Injecting five faults into a finished reproduction — a dropped sentence, one changed word, a truncated paragraph, a deleted list item, a blanked table cell — caught four and missed the fifth, which is how the threshold above was found. It costs one run.
 
-Every surviving difference then goes in the preface, named. "556 of the source's 557 paragraphs
-appear verbatim, and here is the one that does not" is a much stronger claim than silence.
+Every surviving difference then goes in the preface, named. "556 of the source's 557 paragraphs appear verbatim, and here is the one that does not" is a much stronger claim than silence.
 
 ### A text-only check scores a dropped diagram as perfect
 
-The check above counts paragraphs, and a drawing has none — so a slide reproduced as a table can
-lose its entire picture and still verify at 100%. One slide's three text streams were faithfully
-tabulated while the whole architecture diagram beside them vanished, and nothing complained.
+The check above counts paragraphs, and a drawing has none — so a slide reproduced as a table can lose its entire picture and still verify at 100%. One slide's three text streams were faithfully tabulated while the whole architecture diagram beside them vanished, and nothing complained.
 
-Text fidelity and figure fidelity are separate questions. For the second, **render every figure and
-look at it.** Two cheap signals catch most of it before you spend attention:
+Text fidelity and figure fidelity are separate questions. For the second, **render every figure and look at it.** Two cheap signals catch most of it before you spend attention:
 
-- **Byte size.** A 247 KB SVG that renders to a 1.4 KB PNG is blank. That is how one figure whose
-  viewBox had been blown out to 4,000× the slide canvas was caught.
-- **viewBox against the slide canvas.** PowerPoint 4:3 is 25400 × 19050 in 1/100 mm. Anything wildly
-  wider is off-canvas junk pulled in by crop-to-content; anything much smaller is a crop that ate
-  the drawing.
+- **Byte size.** A 247 KB SVG that renders to a 1.4 KB PNG is blank. That is how one figure whose viewBox had been blown out to 4,000× the slide canvas was caught.
+- **viewBox against the slide canvas.** PowerPoint 4:3 is 25400 × 19050 in 1/100 mm. Anything wildly wider is off-canvas junk pulled in by crop-to-content; anything much smaller is a crop that ate the drawing.
 
-And when deciding whether a slide is "mostly text", decide it from the **render**, not from the
-extracted strings. A slide can be a bullet list that reads like a diagram, or a diagram whose text
-reads like a list. Only looking tells you which.
+And when deciding whether a slide is "mostly text", decide it from the **render**, not from the extracted strings. A slide can be a bullet list that reads like a diagram, or a diagram whose text reads like a list. Only looking tells you which.
 
 ## Finishing
 
-- Add the originals to wherever the project serves downloads, **each file on its own — do not bundle
-  them into a ZIP**, and quote each real size in the link text rather than guessing. A zip hides what
-  is in it, needs unpacking before anyone can look, and duplicates bytes that are already there. In
-  this project that is `cv/public/` and never `spotlite/public/`; the originals are personal
-  documents and `spotlite` is a public template.
-- **Do not archive HTML exports derived from the originals.** They are worth extracting and
-  comparing against — that comparison is the most valuable thing in this skill — but the finding
-  belongs in the preface, not the export in `public/`. The manuscript is the source of record.
-- Work in `cv` first, then backport to `spotlite`. Figures and article prose go to both; the
-  archive and the download links pointing at it stay in `cv`. `sync-both` covers the mechanics.
-- Check the built page for overflow and contrast. **Point any audit at the right host and base
-  path** — auditing one site's URLs against another's preview measures 404 pages, which pass every
-  check while proving nothing.
-- **Run the verification above and quote its result.** Not "the article is faithful" but "n of the
-  source's m paragraphs appear verbatim, and the exceptions are these". If you cannot say the
-  number, the check has not been run.
+- Add the originals to wherever the project serves downloads, **each file on its own — do not bundle them into a ZIP**, and quote each real size in the link text rather than guessing. A zip hides what is in it, needs unpacking before anyone can look, and duplicates bytes that are already there. In this project that is `cv/public/` and never `spotlite/public/`; the originals are personal documents and `spotlite` is a public template.
+- **Do not archive HTML exports derived from the originals.** They are worth extracting and comparing against — that comparison is the most valuable thing in this skill — but the finding belongs in the preface, not the export in `public/`. The manuscript is the source of record.
+- Work in `cv` first, then backport to `spotlite`. Figures and article prose go to both; the archive and the download links pointing at it stay in `cv`. `sync-both` covers the mechanics.
+- Check the built page for overflow and contrast. **Point any audit at the right host and base path** — auditing one site's URLs against another's preview measures 404 pages, which pass every check while proving nothing.
+- **Run the verification above and quote its result.** Not "the article is faithful" but "n of the source's m paragraphs appear verbatim, and the exceptions are these". If you cannot say the number, the check has not been run.
 
 ## Reference
 
-- `references/wmf-traps.md` — the GDI record traps that produce plausible-but-wrong pictures, and
-  the LibreOffice SVG structure notes. Read it whenever a converted figure is close but not right.
+- `references/wmf-traps.md` — the GDI record traps that produce plausible-but-wrong pictures, and the LibreOffice SVG structure notes. Read it whenever a converted figure is close but not right.
