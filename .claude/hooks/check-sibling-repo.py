@@ -72,6 +72,7 @@ MAY_DIVERGE = (
     'src/content/article/eac-2005.md',
     'src/content/article/acs-2005.md',
     'src/content/article/webservices-2004.md',
+    'src/content/article/msac-2005.md',
     'src/content/page/education.md',
 )
 
