@@ -69,10 +69,13 @@ MAY_DIVERGE = (
     'src/content/article/apc-2004.md',
     'src/content/article/ark-2005.md',
     'src/content/article/apc-2004-edit.md',
+    'src/content/article/apc-2004-remotes.md',
     'src/content/article/eac-2005.md',
     'src/content/article/acs-2005.md',
     'src/content/article/webservices-2004.md',
     'src/content/article/msac-2005.md',
+    'src/content/article/apc-2004-remotes.md',
+    'src/content/article/apc-2004-workshop.md',
     'src/content/page/education.md',
 )
 
