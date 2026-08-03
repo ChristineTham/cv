@@ -77,6 +77,7 @@ MAY_DIVERGE = (
     'src/content/article/apc-2004-remotes.md',
     'src/content/article/apc-2004-workshop.md',
     'src/content/article/ecommerce-1997.md',
+    'src/content/article/advisers-2003.md',
     'src/content/page/education.md',
 )
 
