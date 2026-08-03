@@ -52,7 +52,7 @@ Tone is professional but not corporate-bland. All prose is **Australian English*
 
 Note that `build` does **not** generate the PDFs — that is `pnpm run pdf`.
 
-Before calling any change done: `pnpm lint && pnpm astro check && pnpm test && pnpm build`. If you touched content, `src/cv.json` or `src/utils/cv.ts`, run `pnpm run pdf` as well — the PDFs are committed and go stale silently.
+Before calling any change done: `pnpm lint && pnpm astro check && pnpm test && pnpm build`. If you touched content, `src/content/cv/profile.md` or `src/utils/cv.ts`, run `pnpm run pdf` as well — the PDFs are committed and go stale silently.
 
 Prefer non-interactive commands. Watch-mode tools need `CI=true` or their single-run form.
 
@@ -80,18 +80,28 @@ This project uses the **Astro Content Layer API**. Collections are `article`, `p
 
 Navigation is **inferred from the `page` collection** (`order`, `shorttitle`), so adding a page is a Markdown file, not a route. There is no menu data file.
 
-Structured non-Markdown data lives in `src/social.json`, `src/superpowers.json`, `src/config.json` (site identity) and `src/cv.json` (CV contact details, headline, summary, curation limits).
+Structured non-Markdown data lives in `src/social.json`, `src/superpowers.json` and `src/config.json` (site identity). The CV's own copy is Markdown, not JSON: `src/content/cv/profile.md` holds contact details and the competency cut-offs in frontmatter, and the Profile, Career and Key Achievements prose in its body.
 
 Fields worth understanding before you edit them:
 
 - **`work.tags`** — feeds the `/work` word cloud, where a tag's size is _how many roles carry it_. That only works if the vocabulary is reused deliberately across entries; rewording per entry silently destroys the weighting.
-- **`description`** on `work` and `education` — the list-page teaser and the detail page's meta description. Without it the fallback takes the body's first line, which produced fragments like "Awarded".
+- **`description`** on `work` and `education` — required, and load-bearing three times over: the list-page teaser, the detail page's meta description, **and the one-line form the CV prints**. It has to read as all three, and it has to fit one line of the one-pager — about 114 characters, past which the role costs 13.7mm instead of 9.3mm.
 - **`image` / `logo` / `logoBackground`** — square mark, extended wordmark, and the tile colour that makes a mark read as a seamless circle. All optional; a missing `image` falls back to an initials monogram.
-- **`cvPriority` / `omitFromCv` / `oneLiner`** — CV curation only. The site ignores them.
+- **`work.priority`** and **`summary`** — CV curation only; the site always shows the full body. `priority` is 1, 2 or 3 and picks which hand-written form each document prints:
+
+  | priority | full CV       | one-pager                |
+  | :------- | :------------ | :----------------------- |
+  | 1        | the body      | `summary`                |
+  | 2        | `summary`     | `description`            |
+  | 3        | `description` | role, employer and years |
+
+  `summary` is required at 1 and 2 (a Zod refinement enforces it) and must be absent at 3. Note the diagonal: a summary is read on the **one-pager** at priority 1 but only in the **full CV** at priority 2 — so a priority 1 summary must be two short bullets, while a priority 2 summary can be as long as the role deserves. `education` has no priority and behaves exactly as priority 2, because every qualification is shown.
+
+  **If the one-pager stops fitting, lower a role's priority. Never shorten a summary that is already the author's minimum, and never reintroduce truncation.**
 
 ### The CV pipeline
 
-`src/utils/cv.ts` builds both documents from the same collections that drive the site, so there is one source of truth for every career fact. **Curation is deterministic and must stay that way** — recency, seniority, and the explicit per-entry flags above. Editorial copy lives in `src/cv.json` where a human can review it.
+`src/utils/cv.ts` builds both documents from the same collections that drive the site, so there is one source of truth for every career fact. **Curation is deterministic and must stay that way**, and it never abridges: the `CV_DETAIL` table chooses between forms a person wrote, and no code path shortens text. An earlier version sliced bullet lists to fit, which is how a role came to end mid-list under a heading promising five more items. Editorial copy lives in `src/content/cv/profile.md` where a human can review it.
 
 `scripts/generate-pdf.js` serves `dist` over a local HTTP server and drives Puppeteer. The one-pager measures itself and scales to fit exactly one page, **failing loudly** below 80% rather than spilling onto a second. The full CV re-renders denser if the last page would otherwise carry only a line or two. `public/cv-print.css` is deliberately outside the site's CSS pipeline and deliberately contains no `@media` blocks.
 

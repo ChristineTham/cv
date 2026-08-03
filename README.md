@@ -10,7 +10,7 @@ Built on [Spotlite](https://hellotham.com/spotlite/), the MIT-licensed template 
 
 A CV is a document of record, and the failure mode of keeping one is drift: the PDF you email says something different from the site you link to, because you updated one and forgot the other.
 
-Here a role exists in exactly one place, `src/content/work/*.md`, and everything else follows from it — the one-page résumé, the full CV, the work history pages, the career timeline and the search index. **Curation is deterministic**: recency, seniority and explicit per-entry flags. Nothing in the pipeline rewords, summarises or infers a career fact; editorial copy lives in `src/cv.json` where a human can review it.
+Here a role exists in exactly one place, `src/content/work/*.md`, and everything else follows from it — the one-page résumé, the full CV, the work history pages, the career timeline and the search index. **Curation is deterministic**: each role carries a `priority` of 1, 2 or 3 that picks which of its three hand-written forms each document prints — the full body, a `summary`, or a one-line `description`. Nothing in the pipeline rewords, summarises, truncates or infers a career fact; editorial copy lives in `src/content/cv/profile.md` where a human can review it.
 
 The PDFs are built for applicant tracking systems as well as people — single column, selectable text, no layout tables, since multi-column CVs are read out of order by ATS parsers.
 
@@ -48,7 +48,7 @@ Before calling a change done:
 pnpm lint && pnpm astro check && pnpm test && pnpm build
 ```
 
-`build` does **not** regenerate the PDFs. If you touched content, `src/cv.json` or `src/utils/cv.ts`, run `pnpm run pdf` as well — the PDFs are committed and go stale silently.
+`build` does **not** regenerate the PDFs. If you touched content, `src/content/cv/profile.md` or `src/utils/cv.ts`, run `pnpm run pdf` as well — the PDFs are committed and go stale silently.
 
 ## Stack
 

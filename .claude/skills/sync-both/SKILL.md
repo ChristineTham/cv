@@ -69,7 +69,7 @@ pnpm lint && pnpm astro check && pnpm test && pnpm build
 
 `pnpm lint` **writes** — it is `prettier --write .` then `eslint --fix .`. If the change added vendored or generated files, they must be in `.prettierignore` and the eslint `ignores` _before_ this runs.
 
-If content, `src/cv.json` or `src/utils/cv.ts` changed, also run `pnpm run pdf` in both — the PDFs are committed and go stale silently.
+If content, `src/content/cv/profile.md` or `src/utils/cv.ts` changed, also run `pnpm run pdf` in both — the PDFs are committed and go stale silently.
 
 ## 6. Commit and push, one repository per command
 

@@ -99,4 +99,4 @@ pnpm lint && pnpm astro check && pnpm test && pnpm build
 
 `pnpm lint` **writes** — it is `prettier --write .` then `eslint --fix .`, not a check. It reformats anything not covered by `.prettierignore` or the eslint `ignores`, which is how a vendored 1998 HTML bundle in `public/` got silently reindented. Add new vendored or generated material to both ignore lists before running it.
 
-Touching content, `src/cv.json` or `src/utils/cv.ts` also needs `pnpm run pdf` — the PDFs are committed and go stale silently. `pnpm build`, never bare `astro build`.
+Touching content, `src/content/cv/profile.md` or `src/utils/cv.ts` also needs `pnpm run pdf` — the PDFs are committed and go stale silently. `pnpm build`, never bare `astro build`.
