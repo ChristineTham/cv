@@ -44,7 +44,17 @@ The two places they diverge on purpose. `spotlite` is a public template: it ship
 
 **The archive.** `cv` is a personal CV and `spotlite` has no business carrying a personal one, so **every original historical document — Word manuscripts, conference decks and scans — is committed to `cv/public/` and never to `spotlite/public/`.** `spotlite/public/` holds site chrome and the generated CV PDFs, nothing else.
 
-Each original is served **as its own file, never bundled into a ZIP**: a zip hides its contents, needs unpacking before anyone can look, and duplicates bytes already committed alongside it. And the archive is the **sources**, not what was made from them — the contemporaneous HTML exports are worth extracting and diffing against the manuscript, but the finding goes in the article's preface and the export does not go in `public/`.
+Each original **document** is served as its own file, **never bundled into a ZIP**: a zip hides its contents, needs unpacking before anyone can look, and duplicates bytes already committed alongside it. A manuscript, a deck or a scan is one artefact, it is browsable as it stands, and there is nothing a zip adds to it.
+
+**A project is the opposite case, and is zipped.** `CHRISTIE.ARJ` unpacked to 373 files of 1987 source — troff chapters, C, 6809 assembly, lex grammars, Makefiles, MPU-401 data. None of them is an artefact on its own; the _tree_ is, and it only means anything assembled. Committing them loose puts hundreds of files into the history and the published tree without making a single one more readable, which is the reasoning above applied backwards. So the four reconstructions ship as `public/rubato-project.zip`, `public/crypt.zip`, `public/infocom.zip` and `public/midi.zip`, each with a `README.md` inside it citing the evidence for what was assigned where.
+
+The Rubato one carries the `-project` suffix for a reason worth keeping. macOS is case-insensitive, so `rubato.zip` and `RUBATO.ZIP` are **one path**, and the archive uses uppercase `.ZIP` names throughout (`AMS-HTML.ZIP`, `META.ZIP`, `REGEXP.ZIP` and the rest on the backup volume). A zip named for a project therefore has to differ from any plausible DOS-era filename by more than case, or restoring an old file silently destroys the reconstruction instead of landing beside it. `crypt`, `infocom` and `midi` have no uppercase counterpart today; give any new project archive a name that could not be typed by a 1992 backup.
+
+The line is what the reader would do with it. One file they would open, and it goes in whole. A source tree they would unpack and build, and it goes in zipped.
+
+The verbatim extraction lives at **`christie/` in the repo root and is gitignored** — it is the working copy the reconstructions were assembled from, and committing it as well would be the duplication the first paragraph warns about. It is in `.prettierignore` too, because Prettier reading `.gitignore` by default is a default, not a guarantee, and a silent reflow of a lex grammar is unrecoverable. `public/*.zip` is already cv-only in the hook, so the zips need no new rule; `christie/*` is listed there so a stray write into it is refused rather than reported as missing from `spotlite`.
+
+And the archive is the **sources**, not what was made from them — the contemporaneous HTML exports are worth extracting and diffing against the manuscript, but the finding goes in the article's preface and the export does not go in `public/`.
 
 **The tooling.** `.claude/`, `AGENTS.md` and this file exist in `cv` alone. They describe a two-repo workflow that only makes sense from the primary side, and much of what they say is about an archive `spotlite` does not have. A template that shipped them would be handing every forker a hook that refuses their files and a skill that syncs to a repository they do not own.
 
@@ -52,10 +62,9 @@ So a backport carries **content and code**, and never the tooling. There is noth
 
 The articles reproducing archived documents stay in **both**. In `spotlite` they simply carry no download link: the standalone `**[Download …]**` lines are dropped, and where a link sat inside a sentence the sentence keeps its words and loses the link. So these differ by design, and a base-normalised diff of them is _expected_ to show the download lines and nothing else:
 
-- `src/content/article/{auug-1993,auug-1994,openworld-1994,crypt-usenix91,suntech-1990,banktech-2006}.md`
-- `src/content/page/education.md`
+The set is `MAY_DIVERGE` in `.claude/hooks/check-sibling-repo.py`, and that list is the authority — it runs to a couple of dozen entries now and grows whenever an article gains a download link, so a copy of it here would only drift. It started as the conference papers and `src/content/page/education.md`; it now also covers the articles citing the recovered project archives.
 
-`.claude/hooks/check-sibling-repo.py` holds all three lists. It **refuses** a historical document or a tooling file written under `spotlite/`, and **downgrades to a warning** on the six files above — which does mean an unrelated drift in one of them is no longer caught, so diff them by hand when you touch them for another reason. It also exempts `public/site.webmanifest` and the two generated CV PDFs, which are each repo's own identity, and it normalises the **host** as well as the base path.
+`.claude/hooks/check-sibling-repo.py` holds all three lists. It **refuses** a historical document or a tooling file written under `spotlite/`, and **downgrades to a warning** on anything in `MAY_DIVERGE` — which does mean an unrelated drift in one of those is no longer caught, so diff them by hand when you touch them for another reason. It also exempts `public/site.webmanifest` and the two generated CV PDFs, which are each repo's own identity, and it normalises the **host** as well as the base path.
 
 **It cannot fire in a session rooted at `spotlite`,** because a hook runs from `$CLAUDE_PROJECT_DIR` and there is no `.claude/` there any more. Nothing stops a session started in `spotlite` from editing it directly and diverging in silence. Start in `cv`.
 

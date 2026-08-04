@@ -43,8 +43,15 @@ SKIP = ('dist/', 'node_modules/', '.astro/', 'coverage/')
 # SOA.ppt` as archive material at all -- which was worse than a plain miss, because the file
 # then fell through to the twin comparison and came back as "missing from spotlite", advising
 # that a personal conference deck be copied into the public template.
+#
+# `public/*.zip` already covers the four project reconstructions built out of CHRISTIE.ARJ,
+# which is how they reach the site. The trailing `christie/*` covers the verbatim extraction
+# itself: it lives at the repo root, is gitignored rather than committed, and is nobody's
+# business but this repo's. It is listed anyway so that a stray Write into it is refused
+# rather than reported as "missing from spotlite".
 CV_ONLY_ARCHIVE = ('public/*.zip', 'public/*.pdf', 'public/*.doc',
-                   'public/*.ppt', 'public/*.dot')
+                   'public/*.ppt', 'public/*.dot',
+                   'christie/*')
 # The tooling: this hook and its sibling, the skills, the agents, and the two briefs. They
 # describe a two-repo workflow that only makes sense from the primary side, and much of what
 # they say is about the personal archive spotlite does not carry. A template should ship the
@@ -78,6 +85,12 @@ MAY_DIVERGE = (
     'src/content/article/apc-2004-workshop.md',
     'src/content/article/ecommerce-1997.md',
     'src/content/article/advisers-2003.md',
+    # These four cite the project archives recovered from CHRISTIE.ARJ and published as
+    # public/*.zip, which is archive material and so cv-only. The spotlite copies keep every
+    # word -- the dates, the findings, the argument -- and drop only the download lines.
+    'src/content/article/infotaskforce.md',
+    'src/content/article/rubato.md',
+    'src/content/article/midi-sdlc-1987.md',
     'src/content/page/education.md',
 )
 

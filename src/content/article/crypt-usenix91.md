@@ -595,3 +595,4 @@ It was cited often, and the two things it argues for both became ordinary practi
 
 - [The paper as published](https://phwl.org/assets/papers/crypt_usenix91.pdf), from the site of my co-author Philip Leong.
 - [A scan of the proceedings](/cv/crypt-usenix91.pdf), which this reproduction was transcribed from.
+- **[The CS3 cryptography coursework (ZIP, 25 KB)](/cv/crypt.zip)**, recovered from a 1992 floppy backup. Not the code behind this paper, which was written years later against `crypt(3)`, but the classical ciphers and the standard attacks on them — Caesar, Vigenère, Beaufort, Kasiski examination, index of coincidence — which is where the interest started.

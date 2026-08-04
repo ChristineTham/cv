@@ -33,3 +33,9 @@ coverage/
 # Byte-cache left behind whenever the .claude/ hooks or skill scripts are imported or
 # syntax-checked. cv-only, because spotlite ships no Python.
 __pycache__/
+
+# The verbatim extraction of CHRISTIE.ARJ (a December 1992 floppy backup of a May 1990
+# snapshot). 373 files of 1987 source, kept locally as the working copy and as the thing
+# the project reconstructions were assembled from. What gets published is the four zips
+# in public/, so this tree is deliberately untracked rather than committed twice.
+/christie/

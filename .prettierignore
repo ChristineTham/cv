@@ -3,10 +3,17 @@ dist
 .astro
 coverage
 
-# Vendored HTML kept verbatim. It is 1990s markup with unterminated tags that
-# Prettier cannot parse, and reformatting it would defeat the point of keeping it.
-public/rubato
-public/RUBATO.ZIP
+# The project archives are zips, which Prettier does not parse, so they need no entry.
+# Two lines were removed here: `public/rubato` and `public/RUBATO.ZIP`, left over from a
+# vendored 1990s HTML bundle no longer in the tree. The second was the reason the Rubato
+# archive is now `public/rubato-project.zip` rather than `rubato.zip` -- macOS is
+# case-insensitive, so the old uppercase name and the plain lowercase one are a single
+# path, and restoring the former would have overwritten the reconstruction.
+
+# The verbatim extraction of CHRISTIE.ARJ, kept at the repo root and gitignored. Listed
+# here as well because a future Prettier may stop reading .gitignore by default, and a
+# reflow of 1987 lex grammars and 6809 assembly would be silent.
+/christie
 
 # Standard
 **/.git
