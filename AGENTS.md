@@ -69,7 +69,8 @@ Prefer non-interactive commands. Watch-mode tools need `CI=true` or their single
 - `src/utils/cv.ts`: Deterministic CV curation.
 - `src/utils/timeline.ts`: Normalises work and education into timeline entries.
 - `src/components/entitylogo.astro`: Shared company/institution mark across all six surfaces.
-- `src/components/wordcloud.astro`: Animated tag cloud on `/work`.
+- `src/components/wordcloud.astro`: Animated tag cloud on `/work` and the article index pages. Give a tag an `href` and its label becomes clickable and the text equivalent becomes visible; leave it off and the cloud stays the inert decoration `/work` needs.
+- `src/components/articleindex.astro`: The dated article list shared by `/articles/<category>/` and `/articles/tag/<slug>/`. Distinct from `articlelist.astro`, which is the home page's recent-writing block and fetches the collection itself.
 - `src/components/search.astro`: Header search UI and client logic.
 - `src/pages/api/search.json.ts`: Fallback search index endpoint.
 - `tests/`: 27 Vitest files. Several assert against built output in `dist/`, so a broken build fails tests.
@@ -85,6 +86,7 @@ Structured non-Markdown data lives in `src/social.json`, `src/superpowers.json` 
 Fields worth understanding before you edit them:
 
 - **`work.tags`** — feeds the `/work` word cloud, where a tag's size is _how many roles carry it_. That only works if the vocabulary is reused deliberately across entries; rewording per entry silently destroys the weighting.
+- **`article.tags`** — the same, and now with teeth: every distinct tag gets its own page at `/articles/tag/<slug>/`, so writing "SOA" where the vocabulary already says "Service oriented architecture" does not just halve a weight, it publishes a second page and splits the articles between them. Slugs must stay distinct — `groupByTag` in `src/utils/articles.ts` fails the build naming both tags rather than quietly merging two into one page. Categories are the closed set in the same file and are a separate axis; an article normally carries one of each.
 - **`description`** on `work` and `education` — required, and load-bearing three times over: the list-page teaser, the detail page's meta description, **and the one-line form the CV prints**. It has to read as all three, and it has to fit one line of the one-pager — about 114 characters, past which the role costs 13.7mm instead of 9.3mm.
 - **`image` / `logo` / `logoBackground`** — square mark, extended wordmark, and the tile colour that makes a mark read as a seamless circle. All optional; a missing `image` falls back to an initials monogram.
 - **`work.priority`** and **`summary`** — CV curation only; the site always shows the full body. `priority` is 1, 2 or 3 and picks which hand-written form each document prints:
