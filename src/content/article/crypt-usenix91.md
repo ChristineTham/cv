@@ -6,7 +6,7 @@ categories:
   - 'Conference papers'
   - 'Software'
 tags:
-  - 'Security'
+  - 'Cybersecurity'
   - 'Cryptography'
   - 'UNIX'
   - 'USENIX'
