@@ -96,6 +96,7 @@ MAY_DIVERGE = (
     'src/content/article/portfolio-management-case-studies.md',
     'src/content/article/international-asset-allocation-1993.md',
     'src/content/page/education.md',
+    'src/content/page/articles.md',
 )
 
 
