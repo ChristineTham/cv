@@ -53,6 +53,23 @@ def esc(s):
              .replace('"', '&quot;'))
 
 
+# Adobe's Symbol encoding, which is not Latin-1: a document asking for "Symbol" and the byte
+# 0xE5 means a large summation sign, and a browser with no Symbol font installed draws the
+# Latin "å" instead. The mapping is exact and published, so translating here costs nothing and
+# removes a whole class of plausible-but-wrong figure. Covers the Greek alphabet and the
+# operators that turn up in equations; anything unlisted passes through unchanged.
+SYMBOL = {
+    **{chr(0x61 + i): c for i, c in enumerate(
+        'αβχδεφγηιϕκλμνοπθρστυϖωξψζ')},
+    **{chr(0x41 + i): c for i, c in enumerate(
+        'ΑΒΧΔΕΦΓΗΙϑΚΛΜΝΟΠΘΡΣΤΥςΩΞΨΖ')},
+    '\xd5': '∏', '\xe5': '∑', '\xf2': '∫', '\xd6': '√', '\xa5': '∞',
+    '\xb1': '±', '\xb3': '≥', '\xa3': '≤', '\xb9': '≠', '\xba': '≡',
+    '\xbb': '≈', '\xd7': '⋅', '\xb4': '×', '\xb8': '÷', '\x2d': '−',
+    '\xae': '→', '\xac': '←', '\xb6': '∂', '\xd0': '∠', '\x40': '≅',
+}
+
+
 class Pen:
     def __init__(self, style, width, col):
         self.style, self.width, self.colour = style & 0xF, max(width, 1), colour(col)
@@ -298,13 +315,26 @@ class Converter:
         if func == TEXTOUT:
             ln = self.w(a, 0)
             s = self.d[a + 2: a + 2 + ln]
-            y, x = self.fy(self.w(a, 1 + (ln + 1) // 2)), self.w(a, 2 + (ln + 1) // 2)
+            ry, rx = self.w(a, 1 + (ln + 1) // 2), self.w(a, 2 + (ln + 1) // 2)
+            # Some writers set TA_UPDATECP and then emit one TEXTOUT per character with the
+            # record's own coordinates left at the origin, letting MOVETO carry the position.
+            # Three charts in a 1993 Word 2.0 assignment are drawn that way — 130 TEXTOUTs of
+            # one character each, all claiming (0,0) — and taking those coordinates literally
+            # stacks every glyph on one spot, which reads as a font fault rather than a
+            # positioning one. Fall back to the current point, but only when a MOVETO has
+            # actually set one, so a genuine draw at the origin still lands there.
+            if (rx, ry) == (0, 0) and self.pos != (0, 0):
+                x, y = self.pos
+            else:
+                y, x = self.fy(ry), rx
         else:
             y, x, ln, flags = (self.fy(self.w(a, 0)), self.w(a, 1),
                                self.w(a, 2), self.w(a, 3))
             off = 4 + (4 if (flags & 0x0006) else 0)     # ETO_OPAQUE/ETO_CLIPPED add a rect
             s = self.d[a + off * 2: a + off * 2 + ln]
         txt = s.decode('latin-1').replace('\r', ' ').replace('\n', ' ').rstrip('\0')
+        if self.font.face.lower().startswith('symbol'):
+            txt = ''.join(SYMBOL.get(c, c) for c in txt)
         if not txt.strip():
             return
         anchor = {0: 'start', 2: 'end', 6: 'middle'}.get(self.align & 6, 'start')

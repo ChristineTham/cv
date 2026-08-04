@@ -91,6 +91,10 @@ MAY_DIVERGE = (
     'src/content/article/infotaskforce.md',
     'src/content/article/rubato.md',
     'src/content/article/midi-sdlc-1987.md',
+    'src/content/article/sbv-tricontinental.md',
+    'src/content/article/banking-business-and-secrecy.md',
+    'src/content/article/portfolio-management-case-studies.md',
+    'src/content/article/international-asset-allocation-1993.md',
     'src/content/page/education.md',
 )
 
